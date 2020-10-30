@@ -51,13 +51,13 @@ public handler fsEnsureInitialize()
 	put new_fluid_synth(mSettings) into mSynth
 	--log mSynth
 
-	put "C:/tmp/lcb-fluid-TEST/sf2/example.sf2" into tFilename
+	//put "F:/Development/GitHub/Ferruslogic/lcb_fluidSynth/sf2/example.sf2" into tFilename
 	--put "/sf2/example.sf2" into tFilename
 
 	
 	// fluid_synth_sfcount(mSynth)
 
-	fluid_synth_sfload(mSynth,tFilename,1) 
+	//fluid_synth_sfload(mSynth,tFilename,1) 
 
 	
 
@@ -66,6 +66,26 @@ public handler fsEnsureInitialize()
 	 
 	put true into mInited
 end handler
+
+
+
+
+
+
+
+public handler fsLoadSample(in pFilename as String)
+	fsEnsureInitialize()
+	log pFilename
+	fluid_synth_sfload(mSynth,pFilename,1) 
+		 
+	put true into mInited
+end handler
+
+
+
+
+
+
 
 
 
