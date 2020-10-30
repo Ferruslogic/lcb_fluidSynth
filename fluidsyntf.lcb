@@ -75,7 +75,7 @@ end handler
 
 public handler fsLoadSample(in pFilename as String)
 	fsEnsureInitialize()
-	log pFilename
+	
 	fluid_synth_sfload(mSynth,pFilename,1) 
 		 
 	put true into mInited
