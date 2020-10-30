@@ -1,5 +1,13 @@
-
 library com.ferruslogic.library.fluidsynth
+
+
+
+
+metadata version is "1.0.0"
+metadata author is "FerrusLogic"
+metadata title is "FluidSynth"
+
+
 
 use com.livecode.foreign
 use com.livecode.engine
@@ -73,12 +81,12 @@ end handler
 
 
 
-public handler fsLoadSample(in pFilename as String)
+public handler fsLoadSample(in pFilename as String) returns Integer	
 	fsEnsureInitialize()
-	
-	fluid_synth_sfload(mSynth,pFilename,1) 
-		 
 	put true into mInited
+	return fluid_synth_sfload(mSynth,pFilename,1) 
+		 
+	
 end handler
 
 
