@@ -1,0 +1,75 @@
+library com.ferruslogic.library.fluidsynth
+
+metadata version is "1.0.0"
+metadata author is "FerrusLogic"
+metadata title is "FluidSynth"
+
+use com.livecode.foreign
+use com.livecode.engine
+
+private type fs_type_SETTINGS 		is Pointer
+private type fs_type_SYNTH 			is Pointer
+private type fs_type_DRIVER 		is Pointer
+
+__safe foreign handler new_fluid_settings() returns fs_type_SETTINGS binds to "libfluidsynth>new_fluid_settings" 
+__safe foreign handler new_fluid_synth(in pSettings as fs_type_SETTINGS) returns optional fs_type_SYNTH binds to "libfluidsynth>new_fluid_synth" 
+__safe foreign handler new_fluid_audio_driver(in pSettings as fs_type_SETTINGS,in pSynth as fs_type_SYNTH ) returns optional fs_type_DRIVER binds to "libfluidsynth>new_fluid_audio_driver" 
+__safe foreign handler delete_fluid_audio_driver(in pDriver as fs_type_DRIVER ) returns nothing binds to "libfluidsynth>delete_fluid_audio_driver" 
+//__safe foreign handler delete_fluid_synth_driver(in pSynth as fs_type_SYNTH ) returns nothing binds to "libfluidsynth>delete_fluid_synth_driver" 
+__safe foreign handler fluid_synth_sfload(in pSynth as fs_type_SYNTH,in pFilename as ZStringNative,in pResetPresets as CBool )	 returns CInt binds to "libfluidsynth>fluid_synth_sfload" 
+__safe foreign handler fluid_synth_noteon(in pSynth as fs_type_SYNTH,in pChan as CInt,in pKey as CInt, in pVel as CInt )	 returns CInt binds to "libfluidsynth>fluid_synth_noteon" 
+__safe foreign handler fluid_synth_noteoff(in pSynth as fs_type_SYNTH,in pChan as CInt,in pKey as CInt )	 returns CInt binds to "libfluidsynth>fluid_synth_noteoff"
+
+-- bend 0-16383 with 8192 as center
+__safe foreign handler fluid_synth_pitch_bend(in pSynth as fs_type_SYNTH,in pChan as CInt,in pBend as CInt )	 returns CInt binds to "libfluidsynth>fluid_synth_pitch_bend" 
+__safe foreign handler fluid_synth_sfcount(in pSynth as fs_type_SYNTH ) returns CInt binds to "libfluidsynth>fluid_synth_sfcount" 
+	 
+
+private variable mInited 		as Boolean
+private variable mSettings 		as optional fs_type_SETTINGS
+private variable mSynth 		as optional fs_type_SYNTH
+private variable mAudioDriver 	as optional fs_type_DRIVER
+
+public handler fsEnsureInitialize() returns optional any
+	if mInited then
+		return mInited
+	end if
+    put  new_fluid_settings() into mSettings
+    put new_fluid_synth(mSettings) into mSynth
+
+	//put "F: ... /sf2/example.sf2" into tFilename
+	// fluid_synth_sfcount(mSynth)
+	//fluid_synth_sfload(mSynth,tFilename,1)
+	put new_fluid_audio_driver(mSettings,mSynth) into mAudioDriver	 
+	put true into mInited
+end handler
+
+
+public handler fsLoadSoundFont(in pFilename as String) returns Integer	
+	if fsEnsureInitialize() then
+		put true into mInited
+		return fluid_synth_sfload(mSynth,pFilename,true)
+	else
+		return false
+	end if
+end handler
+
+public handler fsNoteOn(in pChanel as Integer, in pKey as Integer, in pVel as Integer)
+	fluid_synth_noteon(mSynth,pChanel,pKey,pVel)
+end handler
+
+public handler fsNoteOff(in pChanel as Integer, in pKey as Integer)
+	fluid_synth_noteoff(mSynth,pChanel,pKey)
+end handler
+
+public handler fsPitchBend(in pChanel as Integer, in pBend as Integer)
+	fluid_synth_pitch_bend(mSynth,pChanel,pBend)
+end handler
+
+public handler fsStopDriver()
+	delete_fluid_audio_driver(mAudioDriver)
+	put nothing into mAudioDriver
+	put false into mInited
+end handler
+
+end library
