@@ -13,7 +13,8 @@ private type fs_type_DRIVER is Pointer
 private type fs_type_PLAYER is Pointer
 
 __safe foreign handler new_fluid_settings() returns fs_type_SETTINGS binds to "c:libfluidsynth>new_fluid_settings"
--- __safe foreign handler new_mac_fluid_settings() returns fs_type_SETTINGS binds to "c:FluidSynth.framework>new_fluid_settings"
+__safe foreign handler fluid_settings_setnum(in pSettings as fs_type_SETTINGS, in pSettingName as ZStringNative, in pNumber as CDouble) returns CBool binds to "c:libfluidsynth>fluid_settings_setnum"
+__safe foreign handler fluid_settings_getnum(in pSettings as fs_type_SETTINGS, in pSettingName as ZStringNative, out pNumber as CDouble) returns CBool binds to "c:libfluidsynth>fluid_settings_getnum"
 
 __safe foreign handler new_fluid_synth(in pSettings as fs_type_SETTINGS) returns optional fs_type_SYNTH binds to "c:libfluidsynth>new_fluid_synth"
 -- __safe foreign handler new_mac_fluid_synth(in pSettings as fs_type_SETTINGS) returns optional fs_type_SYNTH binds to "c:FluidSynth.framework>new_fluid_synth"
@@ -88,6 +89,25 @@ public handler fsPlayMIDIFile(in pFilename as String) returns optional any
 		return false
 	end if
 end handler
+
+public handler fsSetGain(in pGain as optional Number) returns optional any
+	if pGain is nothing then
+		put 0.5 into pGain
+	end if
+	return fluid_settings_setnum(mSettings,"synth.gain",pGain)
+end handler
+
+public handler fsGetGain() returns optional any
+	variable rGain as Number
+	variable tSettingDoesNotExist as Boolean
+	put fluid_settings_getnum(mSettings,"synth.gain",rGain) into tSettingDoesNotExist
+	if not tSettingDoesNotExist then
+		return rGain
+	else
+		return "Gain Setting does not exist"
+	end if
+end handler
+
 
 public handler fsMIDIFilePlayerStop() returns optional any
 	fluid_player_stop(mPlayer)
