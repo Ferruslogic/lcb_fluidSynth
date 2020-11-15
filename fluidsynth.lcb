@@ -164,7 +164,9 @@ public handler fsSetTempoBPM(in pBPM as optional Integer)
 	if pBPM is nothing then
 		put 120 into pBPM
 	end if
-	fluid_player_set_bpm(mPLayer,pBPM)
+	if mPLayer is not nothing then
+		fluid_player_set_bpm(mPLayer,pBPM)
+	end if
 end handler
 
 public handler fsSystemReset()
