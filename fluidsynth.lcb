@@ -7,56 +7,61 @@ metadata title is "LC FluidSynth"
 use com.livecode.foreign
 use com.livecode.engine
 
-private type fs_type_SETTINGS is Pointer
-private type fs_type_SYNTH is Pointer
-private type fs_type_DRIVER is Pointer
-private type fs_type_PLAYER is Pointer
+private type fs_SETTINGS is Pointer
+private type fs_SYNTH is Pointer
+private type fs_AUIDIOdrvr is Pointer
+private type fs_PLAYER is Pointer
+private type fs_MIDIROUTER is Pointer
+private type fs_MIDIROUTER_rule is Pointer
+private type fs_MIDIdrvr is Pointer
 
-__safe foreign handler new_fluid_settings() returns fs_type_SETTINGS binds to "c:libfluidsynth>new_fluid_settings"
-__safe foreign handler fluid_settings_setnum(in pSettings as fs_type_SETTINGS, in pSettingName as ZStringNative, in pNumber as CDouble) returns CBool binds to "c:libfluidsynth>fluid_settings_setnum"
-__safe foreign handler fluid_settings_getnum(in pSettings as fs_type_SETTINGS, in pSettingName as ZStringNative, out pNumber as CDouble) returns CBool binds to "c:libfluidsynth>fluid_settings_getnum"
+private variable mInited as Boolean
+private variable mSettings as optional fs_SETTINGS
+private variable mSynth as optional fs_SYNTH
+private variable mAudioDriver	as optional fs_AUIDIOdrvr
+private variable mPlayer as optional fs_PLAYER
+private variable mMIDIDriver	as optional fs_MIDIdrvr
 
-__safe foreign handler new_fluid_audio_driver(in pSettings as fs_type_SETTINGS,in pSynth as fs_type_SYNTH ) returns optional fs_type_DRIVER binds to "c:libfluidsynth>new_fluid_audio_driver"
--- __safe foreign handler new_mac_fluid_audio_driver(in pSettings as fs_type_SETTINGS,in pSynth as fs_type_SYNTH ) returns optional fs_type_DRIVER binds to "c:FluidSynth.framework>new_fluid_audio_driver"
-__safe foreign handler delete_fluid_audio_driver(in pDriver as fs_type_DRIVER ) returns nothing binds to "c:libfluidsynth>delete_fluid_audio_driver"
--- __safe foreign handler delete_fluid_synth_driver(in pSynth as fs_type_SYNTH ) returns nothing binds to "libfluidsynth>delete_fluid_synth_driver"
-
-__safe foreign handler new_fluid_synth(in pSettings as fs_type_SETTINGS) returns optional fs_type_SYNTH binds to "c:libfluidsynth>new_fluid_synth"
-__safe foreign handler delete_fluid_synth(in pSynth as fs_type_SYNTH) returns CBool binds to "c:libfluidsynth>delete_fluid_synth"
--- __safe foreign handler new_mac_fluid_synth(in pSettings as fs_type_SETTINGS) returns optional fs_type_SYNTH binds to "c:FluidSynth.framework>new_fluid_synth"
-__safe foreign handler fluid_synth_sfload(in pSynth as fs_type_SYNTH,in pFilename as ZStringNative,in pResetPresets as CBool ) returns CInt binds to "c:libfluidsynth>fluid_synth_sfload"
-__safe foreign handler fluid_synth_system_reset(in pSynth as fs_type_SYNTH) returns CBool binds to "c:libfluidsynth>fluid_synth_system_reset"
-__safe foreign handler fluid_synth_noteon(in pSynth as fs_type_SYNTH,in pChan as CInt,in pKey as CInt, in pVel as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_noteon"
-__safe foreign handler fluid_synth_noteoff(in pSynth as fs_type_SYNTH,in pChan as CInt,in pKey as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_noteoff"
--- bend 0-16383 with 8192 as center
-__safe foreign handler fluid_synth_pitch_bend(in pSynth as fs_type_SYNTH,in pChan as CInt,in pBend as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_pitch_bend"
-__safe foreign handler fluid_synth_program_change(in pSynth as fs_type_SYNTH,in pChan as CInt,in pProgram as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_program_change"
-__safe foreign handler fluid_synth_bank_select(in pSynth as fs_type_SYNTH,in pChan as CInt,in pBankNum as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_bank_select"
-__safe foreign handler fluid_synth_sfcount(in pSynth as fs_type_SYNTH ) returns CInt binds to "c:libfluidsynth>fluid_synth_sfcount"
-
+__safe foreign handler new_fluid_settings() returns fs_SETTINGS binds to "c:libfluidsynth>new_fluid_settings"
+__safe foreign handler fluid_settings_setnum(in pSettings as fs_SETTINGS, in pSettingName as ZStringNative, in pNumber as CDouble) returns CBool binds to "c:libfluidsynth>fluid_settings_setnum"
+__safe foreign handler fluid_settings_getnum(in pSettings as fs_SETTINGS, in pSettingName as ZStringNative, out pNumber as CDouble) returns CBool binds to "c:libfluidsynth>fluid_settings_getnum"
 __safe foreign handler fluid_is_midifile(in pFilename as ZStringNative ) returns CBool binds to "c:libfluidsynth>fluid_is_midifile"
-__safe foreign handler new_fluid_player(in pSynth as fs_type_SYNTH ) returns optional fs_type_PLAYER binds to "c:libfluidsynth>new_fluid_player"
-__safe foreign handler delete_fluid_player(in pPlayer as fs_type_PLAYER) returns CBool binds to "c:libfluidsynth>delete_fluid_player"
-__safe foreign handler fluid_player_add(in pPlayer as fs_type_PLAYER,in pFilename as ZStringNative) returns CBool binds to "c:libfluidsynth>fluid_player_add"
-__safe foreign handler fluid_player_play(in pPlayer as fs_type_PLAYER) returns CBool binds to "c:libfluidsynth>fluid_player_play"
-__safe foreign handler fluid_player_stop(in pPlayer as fs_type_PLAYER) returns CBool binds to "c:libfluidsynth>fluid_player_stop"
-__safe foreign handler fluid_player_set_bpm(in pPlayer as fs_type_PLAYER,in pBPM as CInt) returns CBool binds to "c:libfluidsynth>fluid_player_set_bpm"
-__safe foreign handler fluid_player_set_midi_tempo(in pPlayer as fs_type_PLAYER,in pMillisecsPerQrtrNote as CInt) returns CBool binds to "c:libfluidsynth>fluid_player_set_midi_tempo"
--- in microseconds per quarter note, as per MIDI file spec so 500000 = 120 BPM
-__safe foreign handler fluid_player_get_status(in pPlayer as fs_type_PLAYER) returns CInt binds to "c:libfluidsynth>fluid_player_get_status"
-
-
-
 -- __safe foreign handler fluid_version_str() returns optional Pointer binds to "c:libfluidsynth>fluid_version_str"
 __safe foreign handler fluid_version(out rMaj as CInt, out rMin as CInt, out rMicr as CInt) returns nothing binds to "c:libfluidsynth>fluid_version"
 
-private variable mInited as Boolean
-private variable mSettings as optional fs_type_SETTINGS
-private variable mSynth as optional fs_type_SYNTH
-private variable mAudioDriver	as optional fs_type_DRIVER
-private variable mPlayer as optional fs_type_PLAYER
+__safe foreign handler new_fluid_audio_driver(in pSettings as fs_SETTINGS,in pSynth as fs_SYNTH ) \
+																			returns optional fs_AUIDIOdrvr binds to "c:libfluidsynth>new_fluid_audio_driver"
+__safe foreign handler delete_fluid_audio_driver(in pDriver as fs_AUIDIOdrvr ) returns nothing binds to "c:libfluidsynth>delete_fluid_audio_driver"
+__safe foreign handler new_fluid_synth(in pSettings as fs_SETTINGS) returns optional fs_SYNTH binds to "c:libfluidsynth>new_fluid_synth"
+__safe foreign handler delete_fluid_synth(in pSynth as fs_SYNTH) returns CBool binds to "c:libfluidsynth>delete_fluid_synth"
+__safe foreign handler new_fluid_player(in pSynth as fs_SYNTH ) returns optional fs_PLAYER binds to "c:libfluidsynth>new_fluid_player"
+__safe foreign handler delete_fluid_player(in pPlayer as fs_PLAYER) returns CBool binds to "c:libfluidsynth>delete_fluid_player"
 
--- public foreign type MIDINotificationIDnSize binds to "MCAggregateTypeInfo:bbbb" -- message ID, message size
+-- http://www.fluidsynth.org/api-1.x/index.html#RealtimeMIDI
+__safe foreign handler new_fluid_midi_router(in pSettings as fs_SETTINGS, in pHandler as any, in pHandlerData as optional any)\
+ 																			returns optional fs_MIDIROUTER binds to "c:libfluidsynth>new_fluid_midi_router"
+__safe foreign handler delete_fluid_midi_router(in pPlayer as fs_MIDIROUTER) returns CBool binds to "c:libfluidsynth>delete_fluid_midi_router"
+__safe foreign handler new_fluid_midi_router_rule() returns fs_MIDIROUTER_rule binds to "c:libfluidsynth>new_fluid_midi_router_rule"
+__safe foreign handler delete_fluid_midi_router_rule(in pRouterRule as fs_MIDIROUTER_rule) returns CBool binds to "c:libfluidsynth>new_fluid_midi_router_rule"
+__safe foreign handler new_fluid_midi_driver(in pSettings as fs_SETTINGS, in pHandler as any, in pHandlerData as optional any )\
+																			returns optional fs_MIDIdrvr binds to "c:libfluidsynth>new_fluid_midi_driver"
+__safe foreign handler delete_fluid_midi_driver(in pPlayer as fs_MIDIdrvr) returns CBool binds to "c:libfluidsynth>delete_fluid_midi_driver"
+
+__safe foreign handler fluid_synth_sfload(in pSynth as fs_SYNTH,in pFilename as ZStringNative,in pResetPresets as CBool ) returns CInt binds to "c:libfluidsynth>fluid_synth_sfload"
+__safe foreign handler fluid_synth_system_reset(in pSynth as fs_SYNTH) returns CBool binds to "c:libfluidsynth>fluid_synth_system_reset"
+__safe foreign handler fluid_synth_noteon(in pSynth as fs_SYNTH,in pChan as CInt,in pKey as CInt, in pVel as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_noteon"
+__safe foreign handler fluid_synth_noteoff(in pSynth as fs_SYNTH,in pChan as CInt,in pKey as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_noteoff"
+__safe foreign handler fluid_synth_pitch_bend(in pSynth as fs_SYNTH,in pChan as CInt,in pBend as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_pitch_bend" -- bend 0-16383, 8192 as center
+__safe foreign handler fluid_synth_program_change(in pSynth as fs_SYNTH,in pChan as CInt,in pProgram as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_program_change"
+__safe foreign handler fluid_synth_bank_select(in pSynth as fs_SYNTH,in pChan as CInt,in pBankNum as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_bank_select"
+__safe foreign handler fluid_synth_sfcount(in pSynth as fs_SYNTH ) returns CInt binds to "c:libfluidsynth>fluid_synth_sfcount"
+
+__safe foreign handler fluid_player_add(in pPlayer as fs_PLAYER,in pFilename as ZStringNative) returns CBool binds to "c:libfluidsynth>fluid_player_add"
+__safe foreign handler fluid_player_play(in pPlayer as fs_PLAYER) returns CBool binds to "c:libfluidsynth>fluid_player_play"
+__safe foreign handler fluid_player_stop(in pPlayer as fs_PLAYER) returns CBool binds to "c:libfluidsynth>fluid_player_stop"
+__safe foreign handler fluid_player_set_bpm(in pPlayer as fs_PLAYER,in pBPM as CInt) returns CBool binds to "c:libfluidsynth>fluid_player_set_bpm"
+__safe foreign handler fluid_player_set_midi_tempo(in pPlayer as fs_PLAYER,in pMicroSecsPerQrtrNote as CInt) returns CBool binds to "c:libfluidsynth>fluid_player_set_midi_tempo" -- per MIDI file spec so 500000 = 120 BPM
+__safe foreign handler fluid_player_get_status(in pPlayer as fs_PLAYER) returns CInt binds to "c:libfluidsynth>fluid_player_get_status"
 
 public handler fsEnsureInitialize() returns optional any
 	if mInited then
@@ -79,7 +84,6 @@ public handler fsEnsureInitialize() returns optional any
 	-- put new_mac_fluid_audio_driver(mSettings,mSynth) into mAudioDriver
 	put true into mInited
 end handler
-
 
 public handler fsLoadSoundFont(in pFilename as String) returns Integer
 	if fsEnsureInitialize() then
