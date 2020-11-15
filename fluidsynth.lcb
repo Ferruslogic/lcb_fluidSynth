@@ -40,6 +40,10 @@ __safe foreign handler delete_fluid_player(in pPlayer as fs_type_PLAYER) returns
 __safe foreign handler fluid_player_add(in pPlayer as fs_type_PLAYER,in pFilename as ZStringNative) returns CBool binds to "c:libfluidsynth>fluid_player_add"
 __safe foreign handler fluid_player_play(in pPlayer as fs_type_PLAYER) returns CBool binds to "c:libfluidsynth>fluid_player_play"
 __safe foreign handler fluid_player_stop(in pPlayer as fs_type_PLAYER) returns CBool binds to "c:libfluidsynth>fluid_player_stop"
+__safe foreign handler fluid_player_set_midi_tempo(in pPlayer as fs_type_PLAYER,in pMillisecsPerQrtrNote as CInt) returns CBool binds to "c:libfluidsynth>fluid_player_set_midi_tempo"
+-- fluid_player_set_midi_tempo(player,tempoMilisecPerquarterNote) -- in microseconds per quarter note, as per MIDI file spec so 500000 = 120 BPM
+__safe foreign handler fluid_player_set_bpm(in pPlayer as fs_type_PLAYER,in pBPM as CInt) returns CBool binds to "c:libfluidsynth>fluid_player_set_bpm"
+
 
 private variable mInited as Boolean
 private variable mSettings as optional fs_type_SETTINGS
@@ -113,6 +117,20 @@ public handler fsMIDIPlayerPlay()
 	if mPlayer is not nothing then
 		fluid_player_play(mPlayer)
 	end if
+end handler
+
+public handler fsSetTempoMillisecsPerQuarterNote(in pTempoMillsecs as optional Integer)
+	if pTempoMillsecs is nothing then
+		put 500000 into pTempoMillsecs --- 500000 = 120 BPM
+	end if
+	return fluid_player_set_midi_tempo(mPLayer,pTempoMillsecs)
+end handler
+
+public handler fsSetTempoBPM(in pBPM as optional Integer)
+	if pBPM is nothing then
+		put 120 into pBPM
+	end if
+	fluid_player_set_bpm(mPLayer,pBPM)
 end handler
 
 public handler fsSystemReset()
