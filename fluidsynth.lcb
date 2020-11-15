@@ -40,10 +40,15 @@ __safe foreign handler delete_fluid_player(in pPlayer as fs_type_PLAYER) returns
 __safe foreign handler fluid_player_add(in pPlayer as fs_type_PLAYER,in pFilename as ZStringNative) returns CBool binds to "c:libfluidsynth>fluid_player_add"
 __safe foreign handler fluid_player_play(in pPlayer as fs_type_PLAYER) returns CBool binds to "c:libfluidsynth>fluid_player_play"
 __safe foreign handler fluid_player_stop(in pPlayer as fs_type_PLAYER) returns CBool binds to "c:libfluidsynth>fluid_player_stop"
-__safe foreign handler fluid_player_set_midi_tempo(in pPlayer as fs_type_PLAYER,in pMillisecsPerQrtrNote as CInt) returns CBool binds to "c:libfluidsynth>fluid_player_set_midi_tempo"
--- fluid_player_set_midi_tempo(player,tempoMilisecPerquarterNote) -- in microseconds per quarter note, as per MIDI file spec so 500000 = 120 BPM
 __safe foreign handler fluid_player_set_bpm(in pPlayer as fs_type_PLAYER,in pBPM as CInt) returns CBool binds to "c:libfluidsynth>fluid_player_set_bpm"
+__safe foreign handler fluid_player_set_midi_tempo(in pPlayer as fs_type_PLAYER,in pMillisecsPerQrtrNote as CInt) returns CBool binds to "c:libfluidsynth>fluid_player_set_midi_tempo"
+-- in microseconds per quarter note, as per MIDI file spec so 500000 = 120 BPM
+__safe foreign handler fluid_player_get_status(in pPlayer as fs_type_PLAYER) returns CInt binds to "c:libfluidsynth>fluid_player_get_status"
 
+
+
+-- __safe foreign handler fluid_version_str() returns optional Pointer binds to "c:libfluidsynth>fluid_version_str"
+__safe foreign handler fluid_version(out rMaj as CInt, out rMin as CInt, out rMicr as CInt) returns nothing binds to "c:libfluidsynth>fluid_version"
 
 private variable mInited as Boolean
 private variable mSettings as optional fs_type_SETTINGS
@@ -51,10 +56,19 @@ private variable mSynth as optional fs_type_SYNTH
 private variable mAudioDriver	as optional fs_type_DRIVER
 private variable mPlayer as optional fs_type_PLAYER
 
+-- public foreign type MIDINotificationIDnSize binds to "MCAggregateTypeInfo:bbbb" -- message ID, message size
+
 public handler fsEnsureInitialize() returns optional any
 	if mInited then
 		return mInited
 	end if
+	variable rMaj as Integer
+	variable rMin as Integer
+	variable rMicr as Integer
+	fluid_version(rMaj,rMin,rMicr)
+	log "FluidSynth Version:"
+	log [rMaj,rMin,rMicr]
+
 	-- put new_mac_fluid_settings() into mSettings
    put new_fluid_settings() into mSettings
    put new_fluid_synth(mSettings) into mSynth
@@ -116,6 +130,22 @@ end handler
 public handler fsMIDIPlayerPlay()
 	if mPlayer is not nothing then
 		fluid_player_play(mPlayer)
+	end if
+end handler
+
+public handler fsMIDIPlayerStatus() returns optional any
+	variable tStatus as Number
+	if mPlayer is not nothing then
+		put fluid_player_get_status(mPlayer) into tStatus
+		if tStatus is 1 then
+			return "playing"
+		else if tStatus is 2 then
+			return "play stopped"
+		else
+			return tStatus
+		end if
+	else
+		return "no player"
 	end if
 end handler
 
