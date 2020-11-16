@@ -1,0 +1,117 @@
+/Users/paul/Desktop/LCB/lcb_fluidSynth/code/x86_64-mac/libFLAC.8.dylib:
+	@loader_path/Libraries/libFLAC.8.dylib (compatibility version 12.0.0, current version 12.0.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1197.1.1)
+/Users/paul/Desktop/LCB/lcb_fluidSynth/code/x86_64-mac/libfluidsynth.dylib:
+	@loader_path/libfluidsynth.dylib (compatibility version 2.0.0, current version 2.3.5)
+	@loader_path/libgthread-2.0.0.dylib (compatibility version 6601.0.0, current version 6601.0.0)
+	@loader_path/libglib-2.0.0.dylib (compatibility version 6601.0.0, current version 6601.0.0)
+	@loader_path/libintl.8.dylib (compatibility version 11.0.0, current version 11.0.0)
+	@loader_path/libportaudio.2.dylib (compatibility version 3.0.0, current version 3.0.0)
+	/System/Library/Frameworks/CoreAudio.framework/Versions/A/CoreAudio (compatibility version 1.0.0, current version 1.0.0)
+	/System/Library/Frameworks/AudioToolbox.framework/Versions/A/AudioToolbox (compatibility version 1.0.0, current version 492.0.0)
+	/System/Library/Frameworks/AudioUnit.framework/Versions/A/AudioUnit (compatibility version 1.0.0, current version 1.0.0)
+	/System/Library/Frameworks/Carbon.framework/Versions/A/Carbon (compatibility version 2.0.0, current version 158.0.0)
+	@loader_path/libsndfile.1.dylib (compatibility version 2.0.0, current version 2.30.0)
+	@loader_path/libreadline.8.dylib (compatibility version 8.0.0, current version 8.0.0)
+	/System/Library/Frameworks/CoreMIDI.framework/Versions/A/CoreMIDI (compatibility version 1.0.0, current version 69.0.0)
+	/System/Library/Frameworks/CoreServices.framework/Versions/A/CoreServices (compatibility version 1.0.0, current version 946.0.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1252.250.1)
+	/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation (compatibility version 150.0.0, current version 1575.17.0)
+/Users/paul/Desktop/LCB/lcb_fluidSynth/code/x86_64-mac/libglib-2.0.0.dylib:
+	@loader_path/libglib-2.0.0.dylib (compatibility version 6401.0.0, current version 6401.3.0)
+	/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation (compatibility version 300.0.0, current version 1349.93.0)
+	@loader_path/libpcre.1.dylib (compatibility version 4.0.0, current version 4.12.0)
+	@loader_path/libintl.8.dylib (compatibility version 10.0.0, current version 10.7.0)
+	/usr/lib/libiconv.2.dylib (compatibility version 7.0.0, current version 7.0.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1238.60.2)
+	/System/Library/Frameworks/CoreServices.framework/Versions/A/CoreServices (compatibility version 1.0.0, current version 775.20.0)
+	/usr/lib/libobjc.A.dylib (compatibility version 1.0.0, current version 228.0.0)
+/Users/paul/Desktop/LCB/lcb_fluidSynth/code/x86_64-mac/libgthread-2.0.0.dylib:
+	@loader_path/libgthread-2.0.0.dylib (compatibility version 6401.0.0, current version 6401.3.0)
+	@loader_path/libglib-2.0.0.dylib (compatibility version 6401.0.0, current version 6401.3.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1238.60.2)
+/Users/paul/Desktop/LCB/lcb_fluidSynth/code/x86_64-mac/libhistory.8.0.dylib:
+	/usr/local/opt/readline/lib/libhistory.8.dylib (compatibility version 8.0.0, current version 8.0.0)
+
+	/usr/lib/libncurses.5.4.dylib (compatibility version 5.4.0, current version 5.4.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1281.0.0)
+/Users/paul/Desktop/LCB/lcb_fluidSynth/code/x86_64-mac/libintl.8.dylib:
+	@loader_path/libintl.8.dylib (compatibility version 11.0.0, current version 11.0.0)
+	/usr/lib/libiconv.2.dylib (compatibility version 7.0.0, current version 7.0.0)
+	/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation (compatibility version 150.0.0, current version 1575.17.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1252.250.1)
+
+/Users/paul/Desktop/LCB/lcb_fluidSynth/code/x86_64-mac/liblzma.5.dylib:
+	/usr/local/opt/xz/lib/liblzma.5.dylib (compatibility version 8.0.0, current version 8.5.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1252.250.1)
+/Users/paul/Desktop/LCB/lcb_fluidSynth/code/x86_64-mac/libogg.0.dylib:
+	@loader_path/libogg.0.dylib (compatibility version 9.0.0, current version 9.4.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1252.250.1)
+/Users/paul/Desktop/LCB/lcb_fluidSynth/code/x86_64-mac/libopus.0.dylib:
+	@loader_path/libopus.0.dylib (compatibility version 9.0.0, current version 9.0.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1252.250.1)
+/Users/paul/Desktop/LCB/lcb_fluidSynth/code/x86_64-mac/libpcre.1.dylib:
+	@loader_path/libpcre.1.dylib (compatibility version 4.0.0, current version 4.12.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1281.0.0)
+
+/Users/paul/Desktop/LCB/lcb_fluidSynth/code/x86_64-mac/libpcre16.0.dylib:
+	/usr/local/opt/pcre/lib/libpcre16.0.dylib (compatibility version 3.0.0, current version 3.12.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1281.0.0)
+
+/Users/paul/Desktop/LCB/lcb_fluidSynth/code/x86_64-mac/libpcre32.0.dylib:
+	/usr/local/opt/pcre/lib/libpcre32.0.dylib (compatibility version 1.0.0, current version 1.12.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1281.0.0)
+
+/Users/paul/Desktop/LCB/lcb_fluidSynth/code/x86_64-mac/libpcrecpp.0.dylib:
+	/usr/local/opt/pcre/lib/libpcrecpp.0.dylib (compatibility version 1.0.0, current version 1.2.0)
+	/usr/local/Cellar/pcre/8.44/lib/libpcre.1.dylib (compatibility version 4.0.0, current version 4.12.0)
+	/usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 800.7.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1281.0.0)
+/Users/paul/Desktop/LCB/lcb_fluidSynth/code/x86_64-mac/libpcreposix.0.dylib:
+	/usr/local/opt/pcre/lib/libpcreposix.0.dylib (compatibility version 1.0.0, current version 1.7.0)
+	/usr/local/Cellar/pcre/8.44/lib/libpcre.1.dylib (compatibility version 4.0.0, current version 4.12.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1281.0.0)
+/Users/paul/Desktop/LCB/lcb_fluidSynth/code/x86_64-mac/libportaudio.2.dylib:
+	@loader_path/libportaudio.2.dylib (compatibility version 3.0.0, current version 3.0.0)
+	/System/Library/Frameworks/CoreAudio.framework/Versions/A/CoreAudio (compatibility version 1.0.0, current version 1.0.0)
+	/System/Library/Frameworks/AudioToolbox.framework/Versions/A/AudioToolbox (compatibility version 1.0.0, current version 492.0.0)
+	/System/Library/Frameworks/AudioUnit.framework/Versions/A/AudioUnit (compatibility version 1.0.0, current version 1.0.0)
+	/System/Library/Frameworks/Carbon.framework/Versions/A/Carbon (compatibility version 2.0.0, current version 158.0.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1252.200.5)
+	/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation (compatibility version 150.0.0, current version 1555.0.0)
+	/System/Library/Frameworks/CoreServices.framework/Versions/A/CoreServices (compatibility version 1.0.0, current version 932.1.0)
+/Users/paul/Desktop/LCB/lcb_fluidSynth/code/x86_64-mac/libportaudiocpp.0.dylib:
+	@loader_path/libportaudiocpp.0.dylib (compatibility version 1.0.0, current version 1.12.0)
+	@loader_path/libportaudio.2.dylib (compatibility version 3.0.0, current version 3.0.0)
+	/System/Library/Frameworks/CoreAudio.framework/Versions/A/CoreAudio (compatibility version 1.0.0, current version 1.0.0)
+	/System/Library/Frameworks/AudioToolbox.framework/Versions/A/AudioToolbox (compatibility version 1.0.0, current version 492.0.0)
+	/System/Library/Frameworks/AudioUnit.framework/Versions/A/AudioUnit (compatibility version 1.0.0, current version 1.0.0)
+	/System/Library/Frameworks/Carbon.framework/Versions/A/Carbon (compatibility version 2.0.0, current version 158.0.0)
+	/usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 400.9.4)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1252.200.5)
+/Users/paul/Desktop/LCB/lcb_fluidSynth/code/x86_64-mac/libreadline.8.dylib:
+	@loader_path/libreadline.8.dylib (compatibility version 8.0.0, current version 8.0.0)
+	/usr/lib/libncurses.5.4.dylib (compatibility version 5.4.0, current version 5.4.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1281.0.0)
+/Users/paul/Desktop/LCB/lcb_fluidSynth/code/x86_64-mac/libsndfile.1.dylib:
+	@loader_path/libsndfile.1.dylib (compatibility version 2.0.0, current version 2.30.0)
+	@loader_path/libFLAC.8.dylib (compatibility version 12.0.0, current version 12.0.0)
+	@loader_path/libvorbis.0.dylib (compatibility version 5.0.0, current version 5.9.0)
+	@loader_path/libvorbisenc.2.dylib (compatibility version 3.0.0, current version 3.12.0)
+	@loader_path/libopus.0.dylib (compatibility version 9.0.0, current version 9.0.0)
+	@loader_path/libogg.0.dylib (compatibility version 9.0.0, current version 9.4.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1252.250.1)
+/Users/paul/Desktop/LCB/lcb_fluidSynth/code/x86_64-mac/libvorbis.0.dylib:
+	@loader_path/libvorbis.0.dylib (compatibility version 5.0.0, current version 5.9.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1252.250.1)
+	@loader_path/libogg.0.dylib (compatibility version 9.0.0, current version 9.4.0)
+/Users/paul/Desktop/LCB/lcb_fluidSynth/code/x86_64-mac/libvorbisenc.2.dylib:
+	@loader_path/libvorbisenc.2.dylib (compatibility version 3.0.0, current version 3.12.0)
+	@loader_path/libvorbis.0.dylib (compatibility version 5.0.0, current version 5.9.0)
+	@loader_path/libogg.0.dylib (compatibility version 9.0.0, current version 9.4.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1252.250.1)
+/Users/paul/Desktop/LCB/lcb_fluidSynth/code/x86_64-mac/libvorbisfile.3.dylib:
+	@loader_path/libvorbisfile.3.dylib (compatibility version 7.0.0, current version 7.8.0)
+	@loader_path/libvorbis.0.dylib (compatibility version 5.0.0, current version 5.9.0)
+	@loader_path/libogg.0.dylib (compatibility version 9.0.0, current version 9.4.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1252.250.1)
