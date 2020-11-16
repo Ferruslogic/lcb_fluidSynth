@@ -207,6 +207,12 @@ public handler fsProgramChange(in pChannel as Integer, in pProgramNum as Integer
 	fluid_synth_program_change(mSynth,pChannel,pProgramNum)
 end handler
 
+public handler fsBankSelect(in pChannel as Integer, in pProgramNum as Integer)
+	fluid_synth_bank_select(mSynth,pChannel,pProgramNum)
+end handler
+
+
+
 public handler fsStopDriver()
 	if mPLayer is not nothing then
 		delete_fluid_player(mPLayer)
