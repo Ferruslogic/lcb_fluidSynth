@@ -14,6 +14,7 @@ private type fs_PLAYER is Pointer
 private type fs_MIDIROUTER is Pointer
 private type fs_MIDIROUTER_rule is Pointer
 private type fs_MIDIdrvr is Pointer
+private type fs_SOUNDFONT is Pointer
 
 constant kFLUID_OK is 0
 constant kFLUID_FAILED is -1
@@ -23,6 +24,7 @@ private variable mSettings as optional fs_SETTINGS
 private variable mSynth as optional fs_SYNTH
 private variable mAudioDriver	as optional fs_AUIDIOdrvr
 private variable mPlayer as optional fs_PLAYER
+private variable mSelectedSoundFont	as optional fs_SOUNDFONT
 private variable mMIDIDriver	as optional fs_MIDIdrvr
 
 __safe foreign handler new_fluid_settings() returns fs_SETTINGS binds to "c:libfluidsynth>new_fluid_settings"
@@ -51,6 +53,9 @@ __safe foreign handler new_fluid_midi_driver(in pSettings as fs_SETTINGS, in pHa
 __safe foreign handler delete_fluid_midi_driver(in pPlayer as fs_MIDIdrvr) returns CBool binds to "c:libfluidsynth>delete_fluid_midi_driver"
 
 __safe foreign handler fluid_synth_sfload(in pSynth as fs_SYNTH,in pFilename as ZStringNative,in pResetPresets as CBool ) returns CInt binds to "c:libfluidsynth>fluid_synth_sfload"
+-- fluid_synth_get_sfont (fluid_synth_t *synth, unsigned int num)
+__safe foreign handler fluid_synth_get_sfont(in pSynth as fs_SYNTH,in pSFontIndexNum as CInt) returns optional fs_SOUNDFONT binds to "c:libfluidsynth>fluid_synth_get_sfont"
+
 __safe foreign handler fluid_synth_system_reset(in pSynth as fs_SYNTH) returns CBool binds to "c:libfluidsynth>fluid_synth_system_reset"
 __safe foreign handler fluid_synth_noteon(in pSynth as fs_SYNTH,in pChan as CInt,in pKey as CInt, in pVel as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_noteon"
 __safe foreign handler fluid_synth_noteoff(in pSynth as fs_SYNTH,in pChan as CInt,in pKey as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_noteoff"
@@ -97,23 +102,45 @@ public handler fsEnsureInitialize() returns optional any
 	put true into mInited
 end handler
 
-public handler fsLoadSoundFont(in pFilename as String) returns Boolean
+public handler fsGetSoundFontCount() returns optional Integer
+	variable tCount as Integer
+	if fsEnsureInitialize() then
+		if mSynth is not nothing then
+			return fluid_synth_sfcount(mSynth)
+		end if
+	end if
+end handler
+
+public handler fsGetSoundFontByIndex(in pSoundFontId as Integer) returns optional Integer
+	variable tCount as Integer
+	variable tSelectedSoundFont as optional fs_SOUNDFONT
+	if fsEnsureInitialize() then
+		if mSynth is not nothing then
+			put fluid_synth_get_sfont(mSynth, pSoundFontId) into tSelectedSoundFont
+			if tSelectedSoundFont is not nothing then put tSelectedSoundFont into mSelectedSoundFont
+		end if
+	end if
+end handler
+
+public handler fsLoadSoundFont(in pFilename as String) returns optional any
 	variable tStatus as Integer
 	if fsEnsureInitialize() then
 		if fluid_is_soundfont(pFilename) then
 			put fluid_synth_sfload(mSynth,pFilename,true) into tStatus
-			if tStatus is kFLUID_OK then
-				return true
+			if tStatus is not kFLUID_FAILED then
+				return tStatus
 			else
-				return false
+				return "Error: SoundFont did not load!"
 			end if
 		else
-			return "Error: File May not be a valid MIDI File!"
+			return "Error: File May not be a valid SoundFont File!"
 		end if
 	else
 		return false
 	end if
 end handler
+
+
 
 public handler fsMIDIPlayerInit() returns optional any
 	if mPlayer is nothing then
