@@ -11,10 +11,12 @@ private type fs_SETTINGS is Pointer
 private type fs_SYNTH is Pointer
 private type fs_AUIDIOdrvr is Pointer
 private type fs_PLAYER is Pointer
+private type fs_SOUNDFONT is Pointer
+
 private type fs_MIDIROUTER is Pointer
 private type fs_MIDIROUTER_rule is Pointer
 private type fs_MIDIdrvr is Pointer
-private type fs_SOUNDFONT is Pointer
+private type fs_MIDIEvent is Pointer
 
 constant kFLUID_OK is 0
 constant kFLUID_FAILED is -1
@@ -28,9 +30,11 @@ private variable mSelectedSoundFont	as optional fs_SOUNDFONT
 private variable mMIDIDriver	as optional fs_MIDIdrvr
 
 __safe foreign handler new_fluid_settings() returns fs_SETTINGS binds to "c:libfluidsynth>new_fluid_settings"
-__safe foreign handler fluid_settings_setnum(in pSettings as fs_SETTINGS, in pSettingName as ZStringNative, in pNumber as CDouble) returns CInt binds to "c:libfluidsynth>fluid_settings_setnum"
-__safe foreign handler fluid_settings_getnum(in pSettings as fs_SETTINGS, in pSettingName as ZStringNative, out pNumber as CDouble) returns CInt binds to "c:libfluidsynth>fluid_settings_getnum"
-__safe foreign handler fluid_is_midifile(in pFilename as ZStringNative ) returns CBool binds to "c:libfluidsynth>fluid_is_midifile" --
+__safe foreign handler fluid_settings_setnum(in pSettings as fs_SETTINGS, in pSettingName as ZStringNative, in pNumber as CDouble) returns Cbool binds to "c:libfluidsynth>fluid_settings_setnum"
+__safe foreign handler fluid_settings_getnum(in pSettings as fs_SETTINGS, in pSettingName as ZStringNative, out rNumber as CDouble) returns CBool binds to "c:libfluidsynth>fluid_settings_getnum"
+__safe foreign handler fluid_settings_setstr(in pSettings as fs_SETTINGS, in pSettingName as ZStringNative, in pSettingString as ZStringNative) returns Cbool binds to "c:libfluidsynth>fluid_settings_setnum"
+__safe foreign handler fluid_settings_getstr(in pSettings as fs_SETTINGS, in pSettingName as ZStringNative, out rSettingString as ZStringNative) returns CBool binds to "c:libfluidsynth>fluid_settings_getnum"
+__safe foreign handler fluid_is_midifile(in pFilename as ZStringNative ) returns CBool binds to "c:libfluidsynth>fluid_is_midifile"
 __safe foreign handler fluid_is_soundfont(in pFilename as ZStringNative ) returns CBool binds to "c:libfluidsynth>fluid_is_soundfont"
 -- __safe foreign handler fluid_version_str() returns optional Pointer binds to "c:libfluidsynth>fluid_version_str"
 __safe foreign handler fluid_version(out rMaj as CInt, out rMin as CInt, out rMicr as CInt) returns nothing binds to "c:libfluidsynth>fluid_version"
@@ -51,6 +55,10 @@ __safe foreign handler delete_fluid_midi_router_rule(in pRouterRule as fs_MIDIRO
 __safe foreign handler new_fluid_midi_driver(in pSettings as fs_SETTINGS, in pHandler as any, in pHandlerData as optional any )\
 																			returns optional fs_MIDIdrvr binds to "c:libfluidsynth>new_fluid_midi_driver"
 __safe foreign handler delete_fluid_midi_driver(in pPlayer as fs_MIDIdrvr) returns CBool binds to "c:libfluidsynth>delete_fluid_midi_driver"
+__safe foreign handler fluid_midi_event_get_type(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_type"
+__safe foreign handler fluid_midi_event_get_channel(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_channel"
+__safe foreign handler fluid_midi_event_get_key(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_key"
+__safe foreign handler fluid_midi_event_get_velocity(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_velocity"
 
 __safe foreign handler fluid_synth_sfload(in pSynth as fs_SYNTH,in pFilename as ZStringNative,in pResetPresets as CBool ) returns CInt binds to "c:libfluidsynth>fluid_synth_sfload"
 -- fluid_synth_get_sfont (fluid_synth_t *synth, unsigned int num)
@@ -94,12 +102,37 @@ public handler fsEnsureInitialize() returns optional any
 	fluid_version(rMaj,rMin,rMicr)
 	log "FluidSynth Version:"
 	log [rMaj,rMin,rMicr]
-
    put new_fluid_settings() into mSettings
    put new_fluid_synth(mSettings) into mSynth
 	put new_fluid_audio_driver(mSettings,mSynth) into mAudioDriver
-	-- put new_mac_fluid_audio_driver(mSettings,mSynth) into mAudioDriver
 	put true into mInited
+end handler
+
+-- Callbacks
+-- follow Trevor Devore's lib mosquitto wrapper example -- https://github.com/trevordevore/lc-mosquitto/blob/master/mosquitto.lcb
+-- public foreign handler type mosquitto_connect_callback(in pMosquitto as Pointer, in pUserData as optional Pointer, in pReturnCode as CInt) returns nothing
+
+private handler fsHandleMIDIinput(in pMyData as optional Data, in pMIDIEvent as fs_MIDIEvent ) returns nothing
+	variable tChan as Integer
+	variable tMsgType as Integer
+	variable tNoteNum as Integer
+	variable tVelocity as Integer
+	put fluid_midi_event_get_type(pMIDIEvent) into tMsgType
+	put fluid_midi_event_get_channel(pMIDIEvent) into tChan
+   put fluid_midi_event_get_key(pMIDIEvent) into tNoteNum
+	put fluid_midi_event_get_velocity(pMIDIEvent) into tVelocity
+	log [tMsgType,tChan,tNoteNum,tVelocity]
+end handler
+
+public handler fsInitMIDIinput(in pInputPortName as optional ZStringNative) returns optional any
+	if mInited then
+		if pInputPortName is nothing then
+			put "LC FluidSynth MIDI in" into pInputPortName
+		end if
+		variable tWasSet as Boolean
+		put fluid_settings_setstr(mSettings,"midi.portname",pInputPortName) into tWasSet
+ 		put new_fluid_midi_driver(mSettings, fsHandleMIDIinput , nothing) into mMIDIDriver
+	end if
 end handler
 
 public handler fsGetSoundFontCount() returns optional Integer
@@ -117,7 +150,9 @@ public handler fsGetSoundFontByIndex(in pSoundFontId as Integer) returns optiona
 	if fsEnsureInitialize() then
 		if mSynth is not nothing then
 			put fluid_synth_get_sfont(mSynth, pSoundFontId) into tSelectedSoundFont
-			if tSelectedSoundFont is not nothing then put tSelectedSoundFont into mSelectedSoundFont
+			if tSelectedSoundFont is not nothing then
+				put tSelectedSoundFont into mSelectedSoundFont
+			end if
 		end if
 	end if
 end handler
@@ -139,8 +174,6 @@ public handler fsLoadSoundFont(in pFilename as String) returns optional any
 		return false
 	end if
 end handler
-
-
 
 public handler fsMIDIPlayerInit() returns optional any
 	if mPlayer is nothing then
@@ -234,20 +267,16 @@ public handler fsSetGain(in pGain as optional Number) returns optional any
 	if pGain is nothing then
 		put 0.5 into pGain
 	end if
-	variable tStatus as Integer
-	put fluid_settings_setnum(mSettings,"synth.gain",pGain) into tStatus
-	if tStatus is kFLUID_OK then
-		return true
-	else
-		return false
-	end if
+	variable tWasSet as Boolean
+	put fluid_settings_setnum(mSettings,"synth.gain",pGain) into tWasSet
+	return tWasSet
 end handler
 
 public handler fsGetGain() returns optional any
 	variable rGain as Number
-	variable tStatus as Integer
-	put fluid_settings_getnum(mSettings,"synth.gain",rGain) into tStatus
-	if tStatus is kFLUID_OK then
+	variable tWasGotten as Boolean
+	put fluid_settings_getnum(mSettings,"synth.gain",rGain) into tWasGotten
+	if tWasGotten then
 		return rGain
 	else
 		return false
