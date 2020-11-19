@@ -32,7 +32,7 @@ private variable mMIDIDriver as optional fs_MIDIdrvr
 __safe foreign handler new_fluid_settings() returns fs_SETTINGS binds to "c:libfluidsynth>new_fluid_settings"
 __safe foreign handler fluid_settings_setnum(in pSettings as fs_SETTINGS, in pSettingName as ZStringNative, in pNumber as CDouble) returns Cbool binds to "c:libfluidsynth>fluid_settings_setnum"
 __safe foreign handler fluid_settings_getnum(in pSettings as fs_SETTINGS, in pSettingName as ZStringNative, out rNumber as CDouble) returns CBool binds to "c:libfluidsynth>fluid_settings_getnum"
-__safe foreign handler fluid_settings_setstr(in pSettings as fs_SETTINGS, in pSettingName as ZStringNative, in pSettingString as Pointer) returns Cbool binds to "c:libfluidsynth>fluid_settings_setnum"
+__safe foreign handler fluid_settings_setstr(in pSettings as fs_SETTINGS, in pSettingName as ZStringNative, in pSettingString as ZStringNative) returns Cbool binds to "c:libfluidsynth>fluid_settings_setnum"
 __safe foreign handler fluid_settings_getstr(in pSettings as fs_SETTINGS, in pSettingName as ZStringNative, out rSettingString as ZStringNative) returns CBool binds to "c:libfluidsynth>fluid_settings_getnum"
 __safe foreign handler fluid_is_midifile(in pFilename as ZStringNative ) returns CBool binds to "c:libfluidsynth>fluid_is_midifile"
 __safe foreign handler fluid_is_soundfont(in pFilename as ZStringNative ) returns CBool binds to "c:libfluidsynth>fluid_is_soundfont"
@@ -46,94 +46,9 @@ __safe foreign handler delete_fluid_synth(in pSynth as fs_SYNTH) returns CBool b
 __safe foreign handler new_fluid_player(in pSynth as fs_SYNTH ) returns optional fs_PLAYER binds to "c:libfluidsynth>new_fluid_player"
 __safe foreign handler delete_fluid_player(in pPlayer as fs_PLAYER) returns CBool binds to "c:libfluidsynth>delete_fluid_player"
 
--- http://www.fluidsynth.org/api-1.x/index.html#RealtimeMIDI
-__safe foreign handler new_fluid_midi_router(in pSettings as fs_SETTINGS, in pHandler as any, in pHandlerData as optional any)\
- 																			returns optional fs_MIDIROUTER binds to "c:libfluidsynth>new_fluid_midi_router"
-__safe foreign handler delete_fluid_midi_router(in pPlayer as fs_MIDIROUTER) returns CBool binds to "c:libfluidsynth>delete_fluid_midi_router"
-__safe foreign handler new_fluid_midi_router_rule() returns fs_MIDIROUTER_rule binds to "c:libfluidsynth>new_fluid_midi_router_rule"
-__safe foreign handler delete_fluid_midi_router_rule(in pRouterRule as fs_MIDIROUTER_rule) returns CBool binds to "c:libfluidsynth>new_fluid_midi_router_rule"
-
-
--- public foreign handler type mosquitto_message_callback(in pMosquitto as Pointer, in pUserData as optional Pointer, in pMessage as Pointer) returns nothing
--- foreign handler mosquitto_message_callback_set (in pMosquitto as Mosquitto_ptr, in pHandler as mosquitto_message_callback) returns nothing binds to "c:libmosquitto>mosquitto_message_callback_set"
---  call it with mosquitto_message_callback_set(mMosquitto, MessageCallback)
-
--- public foreign type MosquittoMessage binds to "MCAggregateTypeInfo:ErrEEa"
-
--- void *memcpy(void *str1, const void *str2, size_t n)
--- Aggregate pointer uses `out` when copying to
--- Aggregate pointer is `inout` when it is the source that is being copied from.
--- Pointer is always `in`
---foreign handler PointerToMosquittoMessage(out rAggregate as MosquittoMessage, in pPointer as Pointer, in pSize as UIntSize) returns nothing binds to "c:memcpy"
---foreign handler PointerToMosquittoMessageWin(out rAggregate as MosquittoMessage, in pPointer as Pointer, in pSize as UIntSize) returns nothing binds to "msvcrt>memcpy"
-
--- private handler MessageCallback(in pMosquitto as Pointer, in pUserData as optional Pointer, in pMessage as Pointer) returns nothing
- -- -- struct mosquitto_message{
- -- --   int mid;
- -- --   char *topic;
- -- --   void *payload;
- -- --   int payloadlen;
- -- --   int qos;
- -- --   bool retain;
- -- -- };
- -- variable tError as String
- -- variable tPayload as String
- -- variable tTopic as String
- -- variable tMessage as MosquittoMessage
- -- variable tSize as Integer
-
---  if the architecture ends with "64" then
---	 put 8+8+8+4+4+1 into tSize
---  else
---	 put 4+4+4+4+4+1 into tSize
--- end if
-
-  -- unsafe
-	-- if the operating system is "windows" then
---		PointerToMosquittoMessageWin(tMessage, pMessage, tSize)
---	 else
---		PointerToMosquittoMessage(tMessage, pMessage, tSize)
---	 end if
-
---	 if tMessage is nothing then
---		put "Unable to get message from pointer" into tError
---	 end if
---  end unsafe
-
---  if tMessage is not nothing then
---	 if element 2 of tMessage is not nothing then
---		unsafe
---		  if not MCStringCreateWithCString(element 2 of tMessage, tTopic) then
---			 put "failed to convert const char * to String" into tError
---		  end if
---		end unsafe
---	 end if
-
---	 if element 3 of tMessage is not nothing then
---		unsafe
---		  if not MCStringCreateWithBytes(element 3 of tMessage, element 4 of tMessage, kMCStringEncodingUTF8, false, tPayload) then
---			 put "unable to extract payload from message data" into tError
---		  end if
---		end unsafe
---	 end if
---  end if
-
---  _PostMessage("MosquittotMessageCallback", [tTopic, tPayload])
--- end handler
-
-
-__safe foreign handler new_fluid_midi_driver(in pSettings as fs_SETTINGS, in pHandler as fd_MIDIEventCallback, in pMyDataPtr as optional Pointer) \
-																			returns optional fs_MIDIdrvr binds to "c:libfluidsynth>new_fluid_midi_driver"
-__safe foreign handler delete_fluid_midi_driver(in pPlayer as fs_MIDIdrvr) returns CBool binds to "c:libfluidsynth>delete_fluid_midi_driver"
-__safe foreign handler fluid_midi_event_get_type(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_type"
-__safe foreign handler fluid_midi_event_get_channel(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_channel"
-__safe foreign handler fluid_midi_event_get_key(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_key"
-__safe foreign handler fluid_midi_event_get_velocity(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_velocity"
-
 __safe foreign handler fluid_synth_sfload(in pSynth as fs_SYNTH,in pFilename as ZStringNative,in pResetPresets as CBool ) returns CInt binds to "c:libfluidsynth>fluid_synth_sfload"
 -- fluid_synth_get_sfont (fluid_synth_t *synth, unsigned int num)
 __safe foreign handler fluid_synth_get_sfont(in pSynth as fs_SYNTH,in pSFontIndexNum as CInt) returns optional fs_SOUNDFONT binds to "c:libfluidsynth>fluid_synth_get_sfont"
-
 __safe foreign handler fluid_synth_system_reset(in pSynth as fs_SYNTH) returns CBool binds to "c:libfluidsynth>fluid_synth_system_reset"
 __safe foreign handler fluid_synth_noteon(in pSynth as fs_SYNTH,in pChan as CInt,in pKey as CInt, in pVel as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_noteon"
 __safe foreign handler fluid_synth_noteoff(in pSynth as fs_SYNTH,in pChan as CInt,in pKey as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_noteoff"
@@ -162,12 +77,70 @@ __safe foreign handler fluid_player_get_status(in pPlayer as fs_PLAYER) returns 
 -- FLUIDSYNTH_API int 	fluid_player_get_midi_tempo (fluid_player_t *player) Get the tempo of a MIDI player. More...
 -- FLUIDSYNTH_API int 	fluid_player_seek (fluid_player_t *player, int ticks) Seek in the currently playing file. More...
 
+-- http://www.fluidsynth.org/api-1.x/index.html#RealtimeMIDI
+
+__safe foreign handler new_fluid_midi_router(in pSettings as fs_SETTINGS, in pHandler as any, in pHandlerData as optional any)\
+ 																			returns optional fs_MIDIROUTER binds to "c:libfluidsynth>new_fluid_midi_router"
+__safe foreign handler delete_fluid_midi_router(in pPlayer as fs_MIDIROUTER) returns CBool binds to "c:libfluidsynth>delete_fluid_midi_router"
+__safe foreign handler new_fluid_midi_router_rule() returns fs_MIDIROUTER_rule binds to "c:libfluidsynth>new_fluid_midi_router_rule"
+__safe foreign handler delete_fluid_midi_router_rule(in pRouterRule as fs_MIDIROUTER_rule) returns CBool binds to "c:libfluidsynth>new_fluid_midi_router_rule"
+
+public foreign handler type handle_midi_event_func_t( in pMyDataPtr as optional Pointer, in pMIDIEvent as Pointer) returns CInt
+
+__safe foreign handler new_fluid_midi_driver(in pSettings as fs_SETTINGS, in pHandler as handle_midi_event_func_t, in pMyDataPtr as optional Pointer) \
+																			returns optional fs_MIDIdrvr binds to "c:libfluidsynth>new_fluid_midi_driver"
+__safe foreign handler delete_fluid_midi_driver(in pPlayer as fs_MIDIdrvr) returns CBool binds to "c:libfluidsynth>delete_fluid_midi_driver"
+__safe foreign handler fluid_midi_event_get_type(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_type"
+__safe foreign handler fluid_midi_event_get_channel(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_channel"
+__safe foreign handler fluid_midi_event_get_key(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_key"
+__safe foreign handler fluid_midi_event_get_velocity(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_velocity"
+
 constant kMCStringEncodingUTF8 is 4
 __safe foreign handler MCStringEncode(in pString as String, in pEncoding as CUInt, in pIsExternalRep as CBool, out rUTF8String as Data) returns CBool binds to "<builtin>"
 --foreign handler MCStringCreateWithCString(in pString as Pointer, out rString as String) returns CBool binds to "<builtin>"
 --foreign handler MCStringCreateWithBytes(in pBytes as Pointer, in pByteCount as LCUInt, in pEncoding as CUInt, in pIsExternalRep as CBool, out rString as String) returns CBool binds to "<builtin>"
 --foreign handler MCDataConvertStringToData(in pString as String, out rData as Data) returns CBool binds to "<builtin>"
 __safe foreign handler MCDataGetBytePtr(in pData as Data) returns optional Pointer binds to "<builtin>"
+
+private handler fsHandleMIDIinput(in pMyDataPtr as optional Pointer, in pMIDIEvent as Pointer ) returns CInt
+	variable tChan as Integer
+	variable tMsgType as Integer
+	variable tNoteNum as Integer
+	variable tVelocity as Integer
+	put fluid_midi_event_get_type(pMIDIEvent) into tMsgType
+	put fluid_midi_event_get_channel(pMIDIEvent) into tChan
+   put fluid_midi_event_get_key(pMIDIEvent) into tNoteNum
+	put fluid_midi_event_get_velocity(pMIDIEvent) into tVelocity
+	log [tMsgType,tChan,tNoteNum,tVelocity]
+	return 0
+end handler
+
+public handler fsInitMIDIinput(in pInputPortName as optional String) returns optional any
+	if mInited then
+		if pInputPortName is nothing then
+			put "LC FluidSynth MIDI in" into pInputPortName
+		end if
+		variable tWasSet as Boolean
+		variable pInputPortNameData as Data
+		variable pInputPortNameDataPtr as Pointer
+		variable pMIDICalbackPtr as Pointer
+      --if MCStringEncode(pInputPortName, kMCStringEncodingUTF8, false, pInputPortNameData) then
+		--	put MCDataGetBytePtr(pInputPortNameData) into pInputPortNameDataPtr
+		-- put fluid_settings_setstr(mSettings,"midi.driver","coremidi") into tWasSet
+	 	-- put fluid_settings_setstr(mSettings,"midi.portname","LC_FS_MIDI IN") into tWasSet
+	--	end if
+	--	variable tDoRunLoopFunc as MCRunloopActionCallback
+	--	variable tContext as optional Pointer
+	  --  MCHandlerGetFunctionPtr(fsHandleMIDIinput,pMIDICalbackPtr)
+	--	if MCHandlerGetFunctionPtr(doRunLoop, tDoRunLoopFunc) then
+	--	  MCEngineAddRunloopAction(tDoRunLoopFunc, tContext, mRunloopAction)
+--		else
+--		  put "Unable to set run loop" into tError
+--		end if
+		put new_fluid_midi_driver(mSettings, fsHandleMIDIinput , nothing) into mMIDIDriver
+ 		--put new_fluid_midi_driver(mSettings, fsHandleMIDIinput , nothing) into mMIDIDriver
+	end if
+end handler
 
 public handler fsEnsureInitialize() returns optional any
 	if mInited then
@@ -185,53 +158,6 @@ public handler fsEnsureInitialize() returns optional any
 	put true into mInited
 end handler
 
--- Callbacks
--- follow Trevor Devore's lib mosquitto wrapper example -- https://github.com/trevordevore/lc-mosquitto/blob/master/mosquitto.lcb
--- public foreign handler type mosquitto_connect_callback(in pMosquitto as Pointer, in pUserData as optional Pointer, in pReturnCode as CInt) returns nothing
-__safe foreign handler MCHandlerGetFunctionPtr(in pHandler as any, out rFuncPtr as Pointer) returns CBool binds to "<builtin>"
-
-public foreign handler type fd_MIDIEventCallback( in pMyDataPtr as optional Pointer, in pMIDIEvent as fs_MIDIEvent) returns nothing
--- foreign handler mosquitto_message_callback_set (in pMosquitto as Mosquitto_ptr, in pHandler as fd_MIDIEventCallback) returns nothing binds to "c:libmosquitto>mosquitto_message_callback_set"
---  call it with mosquitto_message_callback_set(mMosquitto, MessageCallback)
-
--- private handler fsHandleMIDIinput(in pMyDataPtr as optional Pointer, in pMIDIEvent as fs_MIDIEvent ) returns nothing
-private handler fsHandleMIDIinput(in pMyDataPtr as optional Pointer, in pMIDIEvent as fs_MIDIEvent ) returns nothing
-	variable tChan as Integer
-	variable tMsgType as Integer
-	variable tNoteNum as Integer
-	variable tVelocity as Integer
-	put fluid_midi_event_get_type(pMIDIEvent) into tMsgType
-	put fluid_midi_event_get_channel(pMIDIEvent) into tChan
-   put fluid_midi_event_get_key(pMIDIEvent) into tNoteNum
-	put fluid_midi_event_get_velocity(pMIDIEvent) into tVelocity
-	log [tMsgType,tChan,tNoteNum,tVelocity]
-end handler
-
-public handler fsInitMIDIinput(in pInputPortName as optional String) returns optional any
-	if mInited then
-		if pInputPortName is nothing then
-			put "LC FluidSynth MIDI in" into pInputPortName
-		end if
-		variable tWasSet as Boolean
-		variable pInputPortNameData as Data
-		variable pInputPortNameDataPtr as Pointer
-		variable pMIDICalbackPtr as Pointer
-      --if MCStringEncode(pInputPortName, kMCStringEncodingUTF8, false, pInputPortNameData) then
-		--	put MCDataGetBytePtr(pInputPortNameData) into pInputPortNameDataPtr
-		--	put fluid_settings_setstr(mSettings,"midi.portname",pInputPortNameDataPtr) into tWasSet
-	--	end if
-	--	variable tDoRunLoopFunc as MCRunloopActionCallback
-	--	variable tContext as optional Pointer
-	   MCHandlerGetFunctionPtr(fsHandleMIDIinput,pMIDICalbackPtr)
-	--	if MCHandlerGetFunctionPtr(doRunLoop, tDoRunLoopFunc) then
-	--	  MCEngineAddRunloopAction(tDoRunLoopFunc, tContext, mRunloopAction)
---		else
---		  put "Unable to set run loop" into tError
---		end if
-		put new_fluid_midi_driver(mSettings, pMIDICalbackPtr , nothing) into mMIDIDriver
- 		--put new_fluid_midi_driver(mSettings, fsHandleMIDIinput , nothing) into mMIDIDriver
-	end if
-end handler
 
 public handler fsGetSoundFontCount() returns optional Integer
 	variable tCount as Integer
