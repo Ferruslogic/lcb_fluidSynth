@@ -85,18 +85,11 @@ __safe foreign handler delete_fluid_midi_router(in pPlayer as fs_MIDIROUTER) ret
 __safe foreign handler new_fluid_midi_router_rule() returns fs_MIDIROUTER_rule binds to "c:libfluidsynth>new_fluid_midi_router_rule"
 __safe foreign handler delete_fluid_midi_router_rule(in pRouterRule as fs_MIDIROUTER_rule) returns CBool binds to "c:libfluidsynth>new_fluid_midi_router_rule"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
+
 public foreign handler type handle_midi_event_func_t( in pOptionalDataPtr as optional Pointer, in mMIDIBufferPtr as Pointer) returns CInt
-=======
-=======
->>>>>>> 24f6fe9c5622eada6471d10ead5747942359ac1a
-private variable mMIDIEvent as optional Pointer
-public foreign handler type handle_midi_event_func_t( in pMyDataPtr as optional Pointer, in pMIDIEvent as Pointer) returns CInt
->>>>>>> 24f6fe9c5622eada6471d10ead5747942359ac1a
 
 __safe foreign handler new_fluid_midi_driver(in pSettings as fs_SETTINGS, in pHandler as handle_midi_event_func_t, in pOptionalDataPtr as optional Pointer) \
-																			returns optional fs_MIDIdrvr binds to "c:libfluidsynth>new_fluid_midi_driver"
+																	returns optional fs_MIDIdrvr binds to "c:libfluidsynth>new_fluid_midi_driver"
 __safe foreign handler delete_fluid_midi_driver(in pPlayer as fs_MIDIdrvr) returns CBool binds to "c:libfluidsynth>delete_fluid_midi_driver"
 __safe foreign handler fluid_midi_event_get_type(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_type"
 __safe foreign handler fluid_midi_event_get_channel(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_channel"
@@ -110,37 +103,19 @@ __safe foreign handler MCStringEncode(in pString as String, in pEncoding as CUIn
 --foreign handler MCStringCreateWithBytes(in pBytes as Pointer, in pByteCount as LCUInt, in pEncoding as CUInt, in pIsExternalRep as CBool, out rString as String) returns CBool binds to "<builtin>"
 --foreign handler MCDataConvertStringToData(in pString as String, out rData as Data) returns CBool binds to "<builtin>"
 __safe foreign handler MCDataGetBytePtr(in pData as Data) returns optional Pointer binds to "<builtin>"
-
-<<<<<<< HEAD
-<<<<<<< HEAD
 __safe foreign handler MCMemoryAllocate(in pSize as UIntSize, out rBlockPtr as Pointer) returns CBool binds to "<builtin>"
 -- allocates a block of size pSize bytes, places the pointer into rBlockPtr and returns true - or just returns false if it fails
 -- MCMemoryReallocate(T *p_block, size_t p_new_size, T*& r_new_block)
 __safe foreign handler MCMemoryReallocate(in rBlockPtr as Pointer, in pSize as UIntSize, out rReAllocBlockPtr as Pointer) returns CBool binds to "<builtin>"
 __safe foreign handler MCMemoryDeallocate(in rBlockPtr as Pointer) returns nothing binds to "<builtin>"
 
-private handler fsHandleMIDIinput(in pMyDataPtr as optional Pointer, in mMIDIBufferPtr as Pointer ) returns CInt
-	-- log mMIDIBufferPtr
-	variable tDidAllocate as Boolean
-=======
-=======
->>>>>>> 24f6fe9c5622eada6471d10ead5747942359ac1a
--- foreign handler MCMemoryAllocate(in pSize as UIntSize, out rBlock as Pointer) returns CBool
--- It allocates a block of size pSize bytes, places the pointer into rBlock and returns true - or just returns false if it fails
--- you can then pass that pointer htmltidy for it to populate with whatever it does
-
 private handler fsHandleMIDIinput(in pMyDataPtr as optional Pointer, in pMIDIEvent as optional Pointer ) returns CInt
-	log [pMIDIEvent]
-<<<<<<< HEAD
->>>>>>> 24f6fe9c5622eada6471d10ead5747942359ac1a
-=======
->>>>>>> 24f6fe9c5622eada6471d10ead5747942359ac1a
+	-- log [pMIDIEvent]
 	variable tChan as Integer
 	variable tMsgType as Integer
 	variable tNoteNum as Integer
 	variable tVelocity as Integer
-<<<<<<< HEAD
-<<<<<<< HEAD
+
 	-- variable tMIDIBufferPtr as Pointer
 	put fluid_midi_event_get_type(mMIDIBufferPtr) into tMsgType
 	put fluid_midi_event_get_channel(mMIDIBufferPtr) into tChan
@@ -157,27 +132,12 @@ private handler fsHandleMIDIinput(in pMyDataPtr as optional Pointer, in pMIDIEve
 	--	end repeat
 	-- post "MIDIInput" -- with (tChan formatted as string & "," & tNoteNum formatted as string &"," & tVelocity formatted as string)
 	return 0
-=======
-=======
->>>>>>> 24f6fe9c5622eada6471d10ead5747942359ac1a
-	variable tNewPtr as Pointer
-	if pMIDIEvent is not nothing then
-		put fluid_midi_event_get_type(pMIDIEvent) into tMsgType
-		put fluid_midi_event_get_channel(pMIDIEvent) into tChan
-	   put fluid_midi_event_get_key(pMIDIEvent) into tNoteNum
-		put fluid_midi_event_get_velocity(pMIDIEvent) into tVelocity
-		log [tMsgType,tChan,tNoteNum,tVelocity]
-		-- delete_fluid_midi_event(pMIDIEvent)
-		return 0
 	end if
-<<<<<<< HEAD
->>>>>>> 24f6fe9c5622eada6471d10ead5747942359ac1a
-=======
->>>>>>> 24f6fe9c5622eada6471d10ead5747942359ac1a
 end handler
 
 private variable mMIDIBuffer as Data
 private variable mMIDIBufferPtr as Pointer
+
 
 public handler fsInitMIDIinput(in pInputPortName as optional String) returns optional any
 	if mInited then
