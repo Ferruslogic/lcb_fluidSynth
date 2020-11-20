@@ -85,15 +85,21 @@ __safe foreign handler delete_fluid_midi_router(in pPlayer as fs_MIDIROUTER) ret
 __safe foreign handler new_fluid_midi_router_rule() returns fs_MIDIROUTER_rule binds to "c:libfluidsynth>new_fluid_midi_router_rule"
 __safe foreign handler delete_fluid_midi_router_rule(in pRouterRule as fs_MIDIROUTER_rule) returns CBool binds to "c:libfluidsynth>new_fluid_midi_router_rule"
 
+<<<<<<< HEAD
+public foreign handler type handle_midi_event_func_t( in pOptionalDataPtr as optional Pointer, in mMIDIBufferPtr as Pointer) returns CInt
+=======
+private variable mMIDIEvent as optional Pointer
 public foreign handler type handle_midi_event_func_t( in pMyDataPtr as optional Pointer, in pMIDIEvent as Pointer) returns CInt
+>>>>>>> 24f6fe9c5622eada6471d10ead5747942359ac1a
 
-__safe foreign handler new_fluid_midi_driver(in pSettings as fs_SETTINGS, in pHandler as handle_midi_event_func_t, in pMyDataPtr as optional Pointer) \
+__safe foreign handler new_fluid_midi_driver(in pSettings as fs_SETTINGS, in pHandler as handle_midi_event_func_t, in pOptionalDataPtr as optional Pointer) \
 																			returns optional fs_MIDIdrvr binds to "c:libfluidsynth>new_fluid_midi_driver"
 __safe foreign handler delete_fluid_midi_driver(in pPlayer as fs_MIDIdrvr) returns CBool binds to "c:libfluidsynth>delete_fluid_midi_driver"
 __safe foreign handler fluid_midi_event_get_type(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_type"
 __safe foreign handler fluid_midi_event_get_channel(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_channel"
 __safe foreign handler fluid_midi_event_get_key(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_key"
 __safe foreign handler fluid_midi_event_get_velocity(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_velocity"
+__safe foreign handler delete_fluid_midi_event(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>delete_fluid_midi_event"
 
 constant kMCStringEncodingUTF8 is 4
 __safe foreign handler MCStringEncode(in pString as String, in pEncoding as CUInt, in pIsExternalRep as CBool, out rUTF8String as Data) returns CBool binds to "<builtin>"
@@ -102,18 +108,61 @@ __safe foreign handler MCStringEncode(in pString as String, in pEncoding as CUIn
 --foreign handler MCDataConvertStringToData(in pString as String, out rData as Data) returns CBool binds to "<builtin>"
 __safe foreign handler MCDataGetBytePtr(in pData as Data) returns optional Pointer binds to "<builtin>"
 
-private handler fsHandleMIDIinput(in pMyDataPtr as optional Pointer, in pMIDIEvent as Pointer ) returns CInt
+<<<<<<< HEAD
+__safe foreign handler MCMemoryAllocate(in pSize as UIntSize, out rBlockPtr as Pointer) returns CBool binds to "<builtin>"
+-- allocates a block of size pSize bytes, places the pointer into rBlockPtr and returns true - or just returns false if it fails
+-- MCMemoryReallocate(T *p_block, size_t p_new_size, T*& r_new_block)
+__safe foreign handler MCMemoryReallocate(in rBlockPtr as Pointer, in pSize as UIntSize, out rReAllocBlockPtr as Pointer) returns CBool binds to "<builtin>"
+__safe foreign handler MCMemoryDeallocate(in rBlockPtr as Pointer) returns nothing binds to "<builtin>"
+
+private handler fsHandleMIDIinput(in pMyDataPtr as optional Pointer, in mMIDIBufferPtr as Pointer ) returns CInt
+	-- log mMIDIBufferPtr
+	variable tDidAllocate as Boolean
+=======
+-- foreign handler MCMemoryAllocate(in pSize as UIntSize, out rBlock as Pointer) returns CBool
+-- It allocates a block of size pSize bytes, places the pointer into rBlock and returns true - or just returns false if it fails
+-- you can then pass that pointer htmltidy for it to populate with whatever it does
+
+private handler fsHandleMIDIinput(in pMyDataPtr as optional Pointer, in pMIDIEvent as optional Pointer ) returns CInt
+	log [pMIDIEvent]
+>>>>>>> 24f6fe9c5622eada6471d10ead5747942359ac1a
 	variable tChan as Integer
 	variable tMsgType as Integer
 	variable tNoteNum as Integer
 	variable tVelocity as Integer
-	put fluid_midi_event_get_type(pMIDIEvent) into tMsgType
-	put fluid_midi_event_get_channel(pMIDIEvent) into tChan
-   put fluid_midi_event_get_key(pMIDIEvent) into tNoteNum
-	put fluid_midi_event_get_velocity(pMIDIEvent) into tVelocity
-	log [tMsgType,tChan,tNoteNum,tVelocity]
+<<<<<<< HEAD
+	-- variable tMIDIBufferPtr as Pointer
+	put fluid_midi_event_get_type(mMIDIBufferPtr) into tMsgType
+	put fluid_midi_event_get_channel(mMIDIBufferPtr) into tChan
+   put fluid_midi_event_get_key(mMIDIBufferPtr) into tNoteNum
+	put fluid_midi_event_get_velocity(mMIDIBufferPtr) into tVelocity
+	--log [tMsgType,tChan,tNoteNum,tVelocity]
+	-- MCMemoryDeallocate(mMIDIBufferPtr)
+	-- put MCMemoryAllocate(256,mMIDIBufferPtr) into tDidAllocate
+		-- if tDidAllocate then
+		-- put tMIDIBufferPtr into mMIDIBufferPtr
+	   -- end if
+	--	repeat 100 times
+	fluid_synth_noteon(mSynth,tChan,tNoteNum,tVelocity)
+	--	end repeat
+	-- post "MIDIInput" -- with (tChan formatted as string & "," & tNoteNum formatted as string &"," & tVelocity formatted as string)
 	return 0
+=======
+	variable tNewPtr as Pointer
+	if pMIDIEvent is not nothing then
+		put fluid_midi_event_get_type(pMIDIEvent) into tMsgType
+		put fluid_midi_event_get_channel(pMIDIEvent) into tChan
+	   put fluid_midi_event_get_key(pMIDIEvent) into tNoteNum
+		put fluid_midi_event_get_velocity(pMIDIEvent) into tVelocity
+		log [tMsgType,tChan,tNoteNum,tVelocity]
+		-- delete_fluid_midi_event(pMIDIEvent)
+		return 0
+	end if
+>>>>>>> 24f6fe9c5622eada6471d10ead5747942359ac1a
 end handler
+
+private variable mMIDIBuffer as Data
+private variable mMIDIBufferPtr as Pointer
 
 public handler fsInitMIDIinput(in pInputPortName as optional String) returns optional any
 	if mInited then
@@ -123,7 +172,9 @@ public handler fsInitMIDIinput(in pInputPortName as optional String) returns opt
 		variable tWasSet as Boolean
 		variable pInputPortNameData as Data
 		variable pInputPortNameDataPtr as Pointer
-		variable pMIDICalbackPtr as Pointer
+		variable tMIDIBufferPtr as Pointer
+		variable tDidAllocateBlock as Boolean
+
       --if MCStringEncode(pInputPortName, kMCStringEncodingUTF8, false, pInputPortNameData) then
 		--	put MCDataGetBytePtr(pInputPortNameData) into pInputPortNameDataPtr
 		-- put fluid_settings_setstr(mSettings,"midi.driver","coremidi") into tWasSet
@@ -131,13 +182,16 @@ public handler fsInitMIDIinput(in pInputPortName as optional String) returns opt
 	--	end if
 	--	variable tDoRunLoopFunc as MCRunloopActionCallback
 	--	variable tContext as optional Pointer
-	  --  MCHandlerGetFunctionPtr(fsHandleMIDIinput,pMIDICalbackPtr)
+	 --  MCHandlerGetFunctionPtr(fsHandleMIDIinput,pMIDICalbackPtr)
 	--	if MCHandlerGetFunctionPtr(doRunLoop, tDoRunLoopFunc) then
 	--	  MCEngineAddRunloopAction(tDoRunLoopFunc, tContext, mRunloopAction)
---		else
---		  put "Unable to set run loop" into tError
---		end if
-		put new_fluid_midi_driver(mSettings, fsHandleMIDIinput , nothing) into mMIDIDriver
+	--		else
+	--		  put "Unable to set run loop" into tError
+	--		end if
+
+     -- put MCMemoryAllocate(65536,mMIDIBufferPtr) into tDidAllocateBlock --- crashing has nothing to do with buffer size
+		-- put MCMemoryAllocate(256,mMIDIBufferPtr) into tDidAllocateBlock
+		put new_fluid_midi_driver(mSettings, fsHandleMIDIinput, nothing) into mMIDIDriver
  		--put new_fluid_midi_driver(mSettings, fsHandleMIDIinput , nothing) into mMIDIDriver
 	end if
 end handler
