@@ -5,7 +5,15 @@ metadata author is "FerrusLogic, Paul McClernan"
 metadata title is "LC FluidSynth"
 
 use com.livecode.foreign
+use com.livecode.canvas
+use com.livecode.string
+use com.livecode.char
+use com.livecode.array
+use com.livecode.list
+use com.livecode.widget
 use com.livecode.engine
+use com.livecode.library.widgetutils
+use com.livecode.system
 
 private type fs_SETTINGS is Pointer
 private type fs_SYNTH is Pointer
@@ -108,6 +116,47 @@ __safe foreign handler MCMemoryAllocate(in pSize as UIntSize, out rBlockPtr as P
 -- MCMemoryReallocate(T *p_block, size_t p_new_size, T*& r_new_block)
 __safe foreign handler MCMemoryReallocate(in rBlockPtr as Pointer, in pSize as UIntSize, out rReAllocBlockPtr as Pointer) returns CBool binds to "<builtin>"
 __safe foreign handler MCMemoryDeallocate(in rBlockPtr as Pointer) returns nothing binds to "<builtin>"
+__safe foreign handler MCWidgetGetMyScriptObject(out rObject as ScriptObject) returns nothing binds to "<builtin>"
+
+private handler fsPostMIDIinput(in tMsgType as Integer, in pChan as Integer, pNoteNum as Integer, pVelocity as optional Integer) returns nothing
+   -- variable tScriptObj as ScriptObject
+	-- MCWidgetGetMyScriptObject(tScriptObj)
+	-- log tScriptObj
+	-- get the target -- not allowed in Library modules
+	-- log the result
+	if tMsgType = 144 then
+		if mScriptObject exists then
+			post "MIDINoteOn" to mScriptObject with [ pChan , pNoteNum , pVelocity ]
+			-- send "MIDINoteOn" to mScriptObject with [ pChan , pNoteNum , pVelocity ]
+			-- execute script "get MIDINoteOn(param(1),param(2),param(3)) " of mScriptObject with [ pChan, pNoteNum, pVelocity]
+			-- execute script ("MIDINoteOn("& pChan &","& pNoteNum  &","& pVelocity &")") in mScriptObject
+			-- log the message was handled
+			-- log the result
+			return
+		end if
+	else if tMsgType = 128 then
+		if mScriptObject exists then
+			post "MIDINoteOff" to mScriptObject with [ pChan , pNoteNum ]
+			-- send "MIDINoteOff" to mScriptObject with [ pChan , pNoteNum ]
+			-- execute script ("MIDINoteOff("& pChan &","& pNoteNum & ")") in mScriptObject
+			-- log the message was handled
+			-- log the result
+			return
+		end if
+	else if tMsgType = 224 then
+		-- post "MIDIPitchBend" with [ tChan , tNoteNum , tVelocity ]
+		post "MIDIPitchBend" to mScriptObject with [ pChan , pNoteNum , pVelocity ]
+		return
+	else if tMsgType = 176 then
+		-- post "MIDIController" with [ tChan , tNoteNum , tVelocity ]
+		post "MIDIController" to mScriptObject with [ pChan , pNoteNum , pVelocity ]
+		return
+	end if
+	-- log the system error message
+	-- com.livecode.system
+	-- log the result
+	return
+end handler
 
 private handler fsHandleMIDIinput(in pMyDataPtr as optional Pointer, in mMIDIBufferPtr as Pointer ) returns CInt
 	-- log [pMIDIEvent]
@@ -115,17 +164,36 @@ private handler fsHandleMIDIinput(in pMyDataPtr as optional Pointer, in mMIDIBuf
 	variable tMsgType as Integer
 	variable tNoteNum as Integer
 	variable tVelocity as Integer
-
+	-- resolve script object "this stack"
+	-- put the result into mScriptObject
 	-- variable tMIDIBufferPtr as Pointer
 	put fluid_midi_event_get_type(mMIDIBufferPtr) into tMsgType
 	put fluid_midi_event_get_channel(mMIDIBufferPtr) into tChan
    put fluid_midi_event_get_key(mMIDIBufferPtr) into tNoteNum
 	put fluid_midi_event_get_velocity(mMIDIBufferPtr) into tVelocity
-	--log [tMsgType,tChan,tNoteNum,tVelocity]
-	fluid_synth_noteon(mSynth,tChan,tNoteNum,tVelocity)
 
-	-- post "MIDIReceived" to mScriptObject with (tChan formatted as string & "," & tNoteNum formatted as string &"," & tVelocity formatted as string)
-	post "MIDIReceived" to mScriptObject with [ tChan , tNoteNum , tVelocity ]
+	-- log [tMsgType] -- ,tChan,tNoteNum,tVelocity]
+	if tMsgType = 144 then
+		fsPostMIDIinput(tMsgType,tChan,tNoteNum,tVelocity)
+		-- fluid_synth_noteon(mSynth,tChan,tNoteNum,tVelocity)
+		-- post "MIDINoteOn" with [ tChan , tNoteNum , tVelocity ]
+		--post "MIDINoteOn" to mScriptObject with [ tChan , tNoteNum , tVelocity ]
+	else if tMsgType = 128 then
+		fsPostMIDIinput(tMsgType,tChan,tNoteNum,0)
+		-- fluid_synth_noteoff(mSynth,tChan,tNoteNum)
+		-- post "MIDINoteOff" with [ tChan , tNoteNum , tVelocity ]
+		--post "MIDINoteOff" to mScriptObject with [ tChan , tNoteNum , tVelocity ]
+	else if tMsgType = 224 then
+		fsPostMIDIinput(tMsgType,tChan,tNoteNum,tVelocity)
+		-- fluid_synth_pitch_bend(mSynth,tChan,tNoteNum)
+		-- fsPostMIDIinput(tMsgType,tChan,tNoteNum,tVelocity)
+		-- post "MIDIPitchBend" with [ tChan , tNoteNum , tVelocity ]
+	else if tMsgType = 176 then
+		fsPostMIDIinput(tMsgType,tChan,tNoteNum,tVelocity)
+		-- fluid_synth_cc(mSynth,tChan,tNoteNum,tVelocity)
+		-- fsPostMIDIinput(tMsgType,tChan,tNoteNum,tVelocity)
+	   -- post "MIDIController" with [ tChan , tNoteNum , tVelocity ]
+	end if
 	return 0
 end handler
 
@@ -133,18 +201,28 @@ private variable mMIDIBuffer as Data
 private variable mMIDIBufferPtr as Pointer
 variable mScriptObject as ScriptObject
 
-public handler fsInitMIDIinput(in pInputPortName as optional String) returns optional any
+public handler fsInitMIDIinput(in pInputPortName as optional String, in pTargetScriptObj as optional String) returns optional any
+	if pTargetScriptObj is not nothing then
+		resolve script object pTargetScriptObj
+		put the result into mScriptObject
+	else
+		resolve script object "this stack"
+		put the result into mScriptObject
+	end if
+	log ["MiDI IN TARGET ", mScriptObject]
 	if mInited then
+		if mMIDIDriver is not nothing then
+				delete_fluid_midi_driver(mMIDIDriver)
+				put nothing into mMIDIDriver
+		end if
 		if pInputPortName is nothing then
 			put "LC FluidSynth MIDI in" into pInputPortName
 		end if
 		variable tWasSet as Boolean
-		resolve script object "this stack"
-		put the result into mScriptObject
       --if MCStringEncode(pInputPortName, kMCStringEncodingUTF8, false, pInputPortNameData) then
 		--	put MCDataGetBytePtr(pInputPortNameData) into pInputPortNameDataPtr
 		-- put fluid_settings_setstr(mSettings,"midi.driver","coremidi") into tWasSet
-	 	put fluid_settings_setstr(mSettings,"midi.portname","LC FS MIDI IN") into tWasSet
+	 	put fluid_settings_setstr(mSettings,"midi.portname", pInputPortName) into tWasSet
 	--	end if
 	--	variable tDoRunLoopFunc as MCRunloopActionCallback
 	--	variable tContext as optional Pointer
@@ -352,6 +430,10 @@ public handler fsBankSelect(in pChannel as Integer, in pProgramNum as Integer)
 end handler
 
 public handler fsStopDriver()
+	if mMIDIDriver is not nothing then
+			delete_fluid_midi_driver(mMIDIDriver)
+			put nothing into mMIDIDriver
+	end if
 	if mPLayer is not nothing then
 		delete_fluid_player(mPLayer)
 		put nothing into mPLayer
