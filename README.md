@@ -4,9 +4,6 @@ The content in "code" folder  corresponds to FluidSynth precompiled binaries an 
 
 Here's a video of the progress I've made:
 
-(![Watch the video](https://i.ytimg.com/vi/psR1dJ0PiNA/default.jpg)https://youtu.be/psR1dJ0PiNA)
-
-
 [![WATCH](https://i.ytimg.com/vi/psR1dJ0PiNA/default.jpg)](https://youtu.be/psR1dJ0PiNA "Demo Video")
 
 ## Requirements:
