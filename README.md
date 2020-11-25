@@ -4,7 +4,7 @@ The content in "code" folder  corresponds to FluidSynth precompiled binaries an 
 
 Here's a video of the progress I've made:
 https://www.youtube.com/watch?v=psR1dJ0PiNA
-[![Watch the video](https://img.youtube.com/R1dJ0PiNA/maxresdefault.jpg)](https://youtu.be/R1dJ0PiNA)
+[![Watch the video](https://img.youtube.com/psR1dJ0PiNA/maxresdefault.jpg)](https://youtu.be/psR1dJ0PiNA)
 
 ## Requirements:
  * For testing stack (fsTest.livecode) you must have installed the widget
