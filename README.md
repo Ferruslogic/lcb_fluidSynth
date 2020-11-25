@@ -6,7 +6,7 @@ Here's a video of the progress I've made:
 
 ![Watch the video](https://i.ytimg.com/vi/psR1dJ0PiNA/default.jpg)
 
-https://youtu.be/psR1dJ0PiNA]
+https://youtu.be/psR1dJ0PiNA
 
 
 ## Requirements:
