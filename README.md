@@ -7,6 +7,8 @@ Here's a video of the progress I've made:
 (![Watch the video](https://i.ytimg.com/vi/psR1dJ0PiNA/default.jpg)https://youtu.be/psR1dJ0PiNA)
 
 
+[![WATCH](https://i.ytimg.com/vi/psR1dJ0PiNA/default.jpg)](https://youtu.be/psR1dJ0PiNA "Demo Video")
+
 ## Requirements:
  * For testing stack (fsTest.livecode) you must have installed the widget
 ### Freely easy install available from the LiveCode Extention Store:
