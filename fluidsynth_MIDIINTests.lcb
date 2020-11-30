@@ -67,23 +67,19 @@ __safe foreign handler fluid_synth_program_change(in pSynth as fs_SYNTH,in pChan
 __safe foreign handler fluid_synth_bank_select(in pSynth as fs_SYNTH,in pChan as CInt,in pBankNum as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_bank_select"
 __safe foreign handler fluid_synth_sfcount(in pSynth as fs_SYNTH ) returns CInt binds to "c:libfluidsynth>fluid_synth_sfcount"
 
-__safe foreign handler fluid_player_add(in pPlayer as fs_PLAYER,in pFilename as ZStringNative) returns CBool binds to "c:libfluidsynth>fluid_player_add"
-__safe foreign handler fluid_player_play(in pPlayer as fs_PLAYER) returns CBool binds to "c:libfluidsynth>fluid_player_play"
-__safe foreign handler fluid_player_stop(in pPlayer as fs_PLAYER) returns CBool binds to "c:libfluidsynth>fluid_player_stop"
-__safe foreign handler fluid_player_set_bpm(in pPlayer as fs_PLAYER,in pBPM as CInt) returns CBool binds to "c:libfluidsynth>fluid_player_set_bpm"
-__safe foreign handler fluid_player_set_midi_tempo(in pPlayer as fs_PLAYER,in pMicroSecsPerQrtrNote as CInt) returns CBool binds to "c:libfluidsynth>fluid_player_set_midi_tempo" -- per MIDI file spec so 500000 = 120 BPM
+__safe foreign handler fluid_player_add(in pPlayer as fs_PLAYER,in pFilename as ZStringNative) returns CInt binds to "c:libfluidsynth>fluid_player_add"
+__safe foreign handler fluid_player_play(in pPlayer as fs_PLAYER) returns CInt binds to "c:libfluidsynth>fluid_player_play"
+__safe foreign handler fluid_player_stop(in pPlayer as fs_PLAYER) returns CInt binds to "c:libfluidsynth>fluid_player_stop"
+-- pLoop = 	Times left to loop the playlist. -1 means loop infinitely.
+__safe foreign handler fluid_player_set_loop(in pPlayer as fs_PLAYER,in pLoop as CInt) returns CInt binds to "c:libfluidsynth>fluid_player_set_loop"
+__safe foreign handler fluid_player_set_bpm(in pPlayer as fs_PLAYER,in pBPM as CInt) returns CInt binds to "c:libfluidsynth>fluid_player_set_bpm"
+__safe foreign handler fluid_player_get_bpm(in pPlayer as fs_PLAYER) returns CInt binds to "c:libfluidsynth>fluid_player_get_bpm"
+-- per MIDI file spec so 500000 = 120 BPM
+__safe foreign handler fluid_player_set_midi_tempo(in pPlayer as fs_PLAYER,in pMicroSecsPerQrtrNote as CInt) returns CInt binds to "c:libfluidsynth>fluid_player_set_midi_tempo" -- per MIDI file spec so 500000 = 120 BPM
+__safe foreign handler fluid_player_get_midi_tempo(in pPlayer as fs_PLAYER) returns CInt binds to "c:libfluidsynth>fluid_player_get_midi_tempo" -- per MIDI file spec so 500000 = 120 BPM
 __safe foreign handler fluid_player_get_status(in pPlayer as fs_PLAYER) returns CInt binds to "c:libfluidsynth>fluid_player_get_status"
-
--- fluid_player_set_loop (fluid_player_t *player, int loop) Enable looping of a MIDI player. More...
--- FLUIDSYNTH_API int 	fluid_player_set_midi_tempo (fluid_player_t *player, int tempo)	Set the tempo of a MIDI player. More...
--- FLUIDSYNTH_API int 	fluid_player_set_bpm (fluid_player_t *player, int bpm) Set the tempo of a MIDI player in beats per minute. More...
--- FLUIDSYNTH_API int 	fluid_player_set_playback_callback (fluid_player_t *player, handle_midi_event_func_t handler, void *handler_data) Change the MIDI callback function. More...
--- FLUIDSYNTH_API int 	fluid_player_get_status (fluid_player_t *player) Get MIDI player status. More...
--- FLUIDSYNTH_API int 	fluid_player_get_current_tick (fluid_player_t *player) Get the number of tempo ticks passed. More...
--- FLUIDSYNTH_API int 	fluid_player_get_total_ticks (fluid_player_t *player) Looks through all available MIDI tracks and gets the absolute tick of the very last event to play. More...
--- FLUIDSYNTH_API int 	fluid_player_get_bpm (fluid_player_t *player) Get the tempo of a MIDI player in beats per minute. More...
--- FLUIDSYNTH_API int 	fluid_player_get_midi_tempo (fluid_player_t *player) Get the tempo of a MIDI player. More...
--- FLUIDSYNTH_API int 	fluid_player_seek (fluid_player_t *player, int ticks) Seek in the currently playing file. More...
+__safe foreign handler fluid_player_get_current_tick(in pPlayer as fs_PLAYER) returns CInt binds to "c:libfluidsynth>fluid_player_get_current_tick"
+__safe foreign handler fluid_player_get_total_ticks(in pPlayer as fs_PLAYER) returns CInt binds to "c:libfluidsynth>fluid_player_get_total_ticks"
 
 -- http://www.fluidsynth.org/api-1.x/index.html#RealtimeMIDI
 
@@ -104,6 +100,10 @@ __safe foreign handler fluid_midi_event_get_channel(in pMIDIEvent as fs_MIDIEven
 __safe foreign handler fluid_midi_event_get_key(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_key"
 __safe foreign handler fluid_midi_event_get_velocity(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_velocity"
 __safe foreign handler delete_fluid_midi_event(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>delete_fluid_midi_event"
+
+-- FLUIDSYNTH_API int 	fluid_player_set_playback_callback (fluid_player_t *player, handle_midi_event_func_t handler, void *handler_data) Change the MIDI callback function. More...
+-- FLUIDSYNTH_API int 	fluid_player_seek (fluid_player_t *player, int ticks) Seek in the currently playing file. More...
+
 
 constant kMCStringEncodingUTF8 is 4
 __safe foreign handler MCStringEncode(in pString as String, in pEncoding as CUInt, in pIsExternalRep as CBool, out rUTF8String as Data) returns CBool binds to "<builtin>"
@@ -302,25 +302,69 @@ public handler fsMIDIPlayerInit() returns optional any
 		if fsEnsureInitialize() then
 			put new_fluid_player(mSynth) into mPlayer
 		end if
+	-- else
+		-- put new_fluid_player(mSynth) into mPlayer
+	end if
+end handler
+
+public handler fsMIDIPlayerSetLoop(in pLoop as Number) returns nothing
+	variable tStatus as Integer
+	if mPlayer is not nothing then
+	--	if fsEnsureInitialize() then
+			put fluid_player_set_loop(mPlayer,pLoop) into tStatus
+	--	end if
 	end if
 end handler
 
 public handler fsLoadMIDIFile(in pFilename as String) returns optional any
 	variable tStatus as Integer
+	variable tBool as Boolean
+
 	if fsEnsureInitialize() then
 		if fluid_is_midifile(pFilename) then
-			put fluid_player_add(mPlayer,pFilename) into tStatus
-			if tStatus is kFLUID_OK then
-				return true
+			if mPlayer is not nothing then
+				put delete_fluid_player(mPlayer) into tBool
+				put new_fluid_player(mSynth) into mPlayer
+			   put fluid_player_add(mPlayer,pFilename) into tStatus
+				if tStatus is kFLUID_OK then
+					return true
+				else
+					return false
+				end if
 			else
-				return false
+				put new_fluid_player(mSynth) into mPlayer
+				put fluid_player_add(mPlayer,pFilename) into tStatus
 			end if
 		else
 			return "Error: File May not be a valid MIDI File!"
 		end if
-	else
-		return false
 	end if
+end handler
+
+public handler fsMIDIPlayerCurrentTick() returns optional any
+	variable tTick as Integer
+	variable tBool as Boolean
+
+	if fsEnsureInitialize() then
+		if mPlayer is not nothing then
+			put fluid_player_get_current_tick(mPlayer) into tTick
+			return tTick
+		end if
+	end if
+	-- __safe foreign handler fluid_player_get_total_ticks(in pPlayer as fs_PLAYER) returns CInt binds to "c:libfluidsynth>fluid_player_get_total_ticks"
+end handler
+
+public handler fsMIDIPlayerTotalTicks() returns optional any
+	variable tTicks as Integer
+	variable tBool as Boolean
+
+	if fsEnsureInitialize() then
+		if mPlayer is not nothing then
+			put fluid_player_get_total_ticks(mPlayer) into tTicks
+			return tTicks
+		end if
+	end if
+	-- __safe foreign handler (in pPlayer as fs_PLAYER) returns CInt binds to "c:libfluidsynth>fluid_player_get_total_ticks"
 end handler
 
 public handler fsMIDIPlayerStop()
@@ -365,6 +409,7 @@ public handler fsMIDIPlayerStatus() returns optional any
 	end if
 end handler
 
+
 public handler fsSetTempoMillisecsPerQuarterNote(in pTempoMillsecs as optional Integer)
 	if pTempoMillsecs is nothing then
 		put 500000 into pTempoMillsecs --- 500000 = 120 BPM
@@ -378,6 +423,14 @@ public handler fsSetTempoBPM(in pBPM as optional Integer)
 	end if
 	if mPLayer is not nothing then
 		fluid_player_set_bpm(mPLayer,pBPM)
+	end if
+end handler
+
+public handler fsGetTempoBPM() returns optional any
+	variable tBPM as Integer
+	if mPLayer is not nothing then
+			put fluid_player_get_bpm(mPLayer) into tBPM
+			return tBPM
 	end if
 end handler
 
