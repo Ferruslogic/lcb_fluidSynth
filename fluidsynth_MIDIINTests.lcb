@@ -1,4 +1,4 @@
-library com.ferruslogic.library.fluidsynth
+ library com.ferruslogic.library.fluidsynth
 
 metadata version is "0.5"
 metadata author is "FerrusLogic, Paul McClernan"
@@ -158,8 +158,9 @@ private handler fsPostMIDIinput(in tMsgType as Integer, in pChan as Integer, pNo
 	return
 end handler
 
-private handler fsSetMIDIInTargetScriptObj (in pTargetScriptObj as optional String ) returns optional any
+public handler fsSetMIDIInTargetScriptObj (in pTargetScriptObj as optional String ) returns optional any
 	if pTargetScriptObj is not nothing then
+		log pTargetScriptObj
 		resolve script object pTargetScriptObj
 		put the result into mScriptObject
 	--	else
