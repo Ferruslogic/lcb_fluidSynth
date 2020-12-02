@@ -158,6 +158,16 @@ private handler fsPostMIDIinput(in tMsgType as Integer, in pChan as Integer, pNo
 	return
 end handler
 
+private handler fsSetMIDIInTargetScriptObj (in pTargetScriptObj as optional String ) returns optional any
+	if pTargetScriptObj is not nothing then
+		resolve script object pTargetScriptObj
+		put the result into mScriptObject
+	--	else
+	--		resolve script object "this stack"
+	--		put the result into mScriptObject
+	end if
+end handler
+
 private handler fsHandleMIDIinput(in pMyDataPtr as optional Pointer, in mMIDIBufferPtr as Pointer ) returns CInt
 	-- log [pMIDIEvent]
 	variable tChan as Integer
