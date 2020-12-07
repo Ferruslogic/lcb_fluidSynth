@@ -158,7 +158,7 @@ private handler fsPostMIDIinput(in tMsgType as Integer, in pChan as Integer, pNo
 	return
 end handler
 
-public handler fsSetMIDIInTargetScriptObj (in pTargetScriptObj as optional String ) returns optional any
+public handler fsSetMIDIInTargetScriptObj(in pTargetScriptObj as optional String ) returns optional any
 	if pTargetScriptObj is not nothing then
 		log pTargetScriptObj
 		resolve script object pTargetScriptObj
