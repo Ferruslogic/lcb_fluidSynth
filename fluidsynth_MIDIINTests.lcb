@@ -45,28 +45,24 @@ __safe foreign handler fluid_settings_setstr(in pSettings as fs_SETTINGS, in pSe
 __safe foreign handler fluid_settings_getstr(in pSettings as fs_SETTINGS, in pSettingName as ZStringNative, out rSettingString as ZStringNative) returns CBool binds to "c:libfluidsynth>fluid_settings_getstr"
 __safe foreign handler fluid_is_midifile(in pFilename as ZStringNative ) returns CBool binds to "c:libfluidsynth>fluid_is_midifile"
 __safe foreign handler fluid_is_soundfont(in pFilename as ZStringNative ) returns CBool binds to "c:libfluidsynth>fluid_is_soundfont"
--- __safe foreign handler fluid_version_str() returns optional Pointer binds to "c:libfluidsynth>fluid_version_str"
 __safe foreign handler fluid_version(out rMaj as CInt, out rMin as CInt, out rMicr as CInt) returns nothing binds to "c:libfluidsynth>fluid_version"
-__safe foreign handler new_fluid_audio_driver(in pSettings as fs_SETTINGS,in pSynth as fs_SYNTH ) \
-																			returns optional fs_AUIDIOdrvr binds to "c:libfluidsynth>new_fluid_audio_driver"
+__safe foreign handler fluid_version_str() returns Pointer binds to "c:libfluidsynth>fluid_version_str"
+
+__safe foreign handler new_fluid_audio_driver(in pSettings as fs_SETTINGS,in pSynth as fs_SYNTH ) returns optional fs_AUIDIOdrvr binds to "c:libfluidsynth>new_fluid_audio_driver"
 __safe foreign handler delete_fluid_audio_driver(in pDriver as fs_AUIDIOdrvr ) returns nothing binds to "c:libfluidsynth>delete_fluid_audio_driver"
+
 __safe foreign handler new_fluid_synth(in pSettings as fs_SETTINGS) returns optional fs_SYNTH binds to "c:libfluidsynth>new_fluid_synth"
 __safe foreign handler delete_fluid_synth(in pSynth as fs_SYNTH) returns CBool binds to "c:libfluidsynth>delete_fluid_synth"
-__safe foreign handler new_fluid_player(in pSynth as fs_SYNTH ) returns optional fs_PLAYER binds to "c:libfluidsynth>new_fluid_player"
-__safe foreign handler delete_fluid_player(in pPlayer as fs_PLAYER) returns CBool binds to "c:libfluidsynth>delete_fluid_player"
-
+__safe foreign handler fluid_synth_get_cpu_load(in pSynth as fs_SYNTH) returns CDouble binds to "c:libfluidsynth>fluid_synth_get_cpu_load"
 __safe foreign handler fluid_synth_sfload(in pSynth as fs_SYNTH,in pFilename as ZStringNative,in pResetPresets as CBool) returns CSInt binds to "c:libfluidsynth>fluid_synth_sfload"
 __safe foreign handler fluid_synth_add_sfont(in pSynth as fs_SYNTH, in pSoudFont as fs_SOUNDFONT ) returns CSInt binds to "c:libfluidsynth>fluid_synth_add_sfont"
 __safe foreign handler fluid_synth_remove_sfont(in pSynth as fs_SYNTH,in pSoudFont as fs_SOUNDFONT ) returns CSInt binds to "c:libfluidsynth>fluid_synth_remove_sfont"
 __safe foreign handler fluid_synth_sfunload(in pSynth as fs_SYNTH,in pSoudFont as fs_SOUNDFONT, in pReset as CInt) returns CSInt binds to "c:libfluidsynth>fluid_synth_sfunload"
 __safe foreign handler fluid_synth_sfreload(in pSynth as fs_SYNTH,in pSoundFontId as Cint) returns CSInt binds to "c:libfluidsynth>fluid_synth_sfreload"
-
 __safe foreign handler fluid_synth_get_sfont(in pSynth as fs_SYNTH, in pSFontIndexNum as CInt) returns optional fs_SOUNDFONT binds to "c:libfluidsynth>fluid_synth_get_sfont" -- Index is 0 to _sfcount -1
 __safe foreign handler fluid_synth_get_sfont_by_id(in pSynth as fs_SYNTH, in pSFontID as CInt) returns optional fs_SOUNDFONT binds to "c:libfluidsynth>fluid_synth_get_sfont_by_id"
 __safe foreign handler fluid_sfont_get_name(in pSoundFont as optional fs_SOUNDFONT) returns optional Pointer binds to "c:libfluidsynth>fluid_sfont_get_name" -- pointer to *char string
-
 __safe foreign handler fluid_synth_sfcount(in pSynth as fs_SYNTH ) returns CInt binds to "c:libfluidsynth>fluid_synth_sfcount"
-
 __safe foreign handler fluid_synth_system_reset(in pSynth as fs_SYNTH) returns CBool binds to "c:libfluidsynth>fluid_synth_system_reset"
 __safe foreign handler fluid_synth_noteon(in pSynth as fs_SYNTH,in pChan as CInt,in pKey as CInt, in pVel as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_noteon"
 __safe foreign handler fluid_synth_noteoff(in pSynth as fs_SYNTH,in pChan as CInt,in pKey as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_noteoff"
@@ -76,6 +72,8 @@ __safe foreign handler fluid_synth_get_cc(in pSynth as fs_SYNTH,in pChan as CInt
 __safe foreign handler fluid_synth_program_change(in pSynth as fs_SYNTH,in pChan as CInt,in pProgram as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_program_change"
 __safe foreign handler fluid_synth_bank_select(in pSynth as fs_SYNTH,in pChan as CInt,in pBankNum as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_bank_select"
 
+__safe foreign handler new_fluid_player(in pSynth as fs_SYNTH ) returns optional fs_PLAYER binds to "c:libfluidsynth>new_fluid_player"
+__safe foreign handler delete_fluid_player(in pPlayer as fs_PLAYER) returns CBool binds to "c:libfluidsynth>delete_fluid_player"
 __safe foreign handler fluid_player_add(in pPlayer as fs_PLAYER,in pFilename as ZStringNative) returns CInt binds to "c:libfluidsynth>fluid_player_add"
 __safe foreign handler fluid_player_play(in pPlayer as fs_PLAYER) returns CInt binds to "c:libfluidsynth>fluid_player_play"
 __safe foreign handler fluid_player_stop(in pPlayer as fs_PLAYER) returns CInt binds to "c:libfluidsynth>fluid_player_stop"
@@ -168,12 +166,13 @@ end handler
 
 public handler fsSetMIDIInTargetScriptObj(in pTargetScriptObj as optional String ) returns optional any
 	if pTargetScriptObj is not nothing then
-		log pTargetScriptObj
 		resolve script object pTargetScriptObj
 		put the result into mScriptObject
-	--	else
-	--		resolve script object "this stack"
-	--		put the result into mScriptObject
+      log pTargetScriptObj
+	--else
+	  -- resolve script object "this stack"
+     -- put the result into mScriptObject
+     -- log pTargetScriptObj
 	end if
 end handler
 
@@ -260,15 +259,20 @@ public handler fsInitMIDIinput(in pInputPortName as optional String, in pTargetS
 end handler
 
 public handler fsEnsureInitialize() returns optional any
+   variable tStrPtr as Pointer
+   variable tString as String
 	if mInited then
 		return mInited
 	else
-   	variable rMaj as Integer
-   	variable rMin as Integer
-   	variable rMicr as Integer
-   	fluid_version(rMaj,rMin,rMicr)
-   	log "FluidSynth Version:"
-   	log [rMaj,rMin,rMicr]
+   	--variable rMaj as Integer
+   	--variable rMin as Integer
+   	-- variable rMicr as Integer
+   	-- fluid_version(rMaj,rMin,rMicr)
+      -- log [rMaj,rMin,rMicr]
+      put fluid_version_str() into tStrPtr
+      if MCStringCreateWithCString(tStrPtr, tString) then
+         log ["FluidSynth Version:" && tString]
+      end if
       put new_fluid_settings() into mSettings
       put new_fluid_synth(mSettings) into mSynth
    	put new_fluid_audio_driver(mSettings,mSynth) into mAudioDriver
@@ -278,6 +282,14 @@ public handler fsEnsureInitialize() returns optional any
        else
           return false
        end if
+   end if
+end handler
+
+public handler fsGetCPULoad() returns optional any
+   if fsEnsureInitialize() then
+      if mSynth is not nothing then
+         return fluid_synth_get_cpu_load(mSynth)
+      end if
    end if
 end handler
 
