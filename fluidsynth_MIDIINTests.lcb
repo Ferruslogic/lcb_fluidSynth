@@ -106,7 +106,7 @@ __safe foreign handler fluid_midi_event_get_type(in pMIDIEvent as fs_MIDIEvent) 
 __safe foreign handler fluid_midi_event_get_channel(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_channel"
 __safe foreign handler fluid_midi_event_get_key(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_key"
 __safe foreign handler fluid_midi_event_get_velocity(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_velocity"
-__safe foreign handler fluid_midi_event_get_pitch(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_velocity"
+__safe foreign handler fluid_midi_event_get_pitch(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_pitch"
 __safe foreign handler delete_fluid_midi_event(in pMIDIEvent as fs_MIDIEvent) returns nothing binds to "c:libfluidsynth>delete_fluid_midi_event"
 
 -- FLUIDSYNTH_API int 	fluid_player_set_playback_callback (fluid_player_t *player, handle_midi_event_func_t handler, void *handler_data) Change the MIDI callback function. More...
@@ -131,7 +131,7 @@ private handler fsPostMIDIinput(in tMsgType as Integer, in pChan as Integer, pNo
 	-- log tScriptObj
 	-- get the target -- not allowed in Library modules
 	-- log the result
-   resolve script object pTargetScriptObj
+   -- resolve script object mScriptObject
 
 	if tMsgType = 144 then
 		if mScriptObject exists then
@@ -153,6 +153,7 @@ private handler fsPostMIDIinput(in tMsgType as Integer, in pChan as Integer, pNo
 			return
 		end if
 	else if tMsgType = 224 then
+      log pNoteNum
 		-- post "MIDIPitchBend" with [ tChan , tNoteNum , tVelocity ]
 		post "MIDIPitchBend" to mScriptObject with [ pChan , pNoteNum ]
 		return
@@ -199,7 +200,7 @@ private handler fsHandleMIDIinput(in pMyDataPtr as optional Pointer, in mMIDIEvt
 		fsPostMIDIinput(tMsgType,tChan,tNoteNum,0)
 		-- fluid_synth_noteoff(mSynth,tChan,tNoteNum)
 	else if tMsgType = 224 then
-      fluid_midi_event_get_pitch(mMIDIEvtPtr) into tNoteNum
+      put fluid_midi_event_get_pitch(mMIDIEvtPtr) into tNoteNum
 		fsPostMIDIinput(tMsgType,tChan,tNoteNum,0)
 		-- fluid_synth_pitch_bend(mSynth,tChan,tNoteNum)
 	else if tMsgType = 176 then
