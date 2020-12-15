@@ -8,7 +8,7 @@ Here's a video of the progress I've made:
 
 ## Requirements:
  * For testing stack (fsTest.livecode) you must have installed the widget
-### Freely easy install available from the LiveCode Extention Store:
+### Free and easy install available from the LiveCode Extention Store:
 https://livecode.com/extensions/piano-widget/1-3/
 ### Latest bug fixed version:
 https://github.com/PaulMcClernan/LCB_PianoWidget (LATEST)
