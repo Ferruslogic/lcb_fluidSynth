@@ -1,6 +1,6 @@
 # Livecode Builder wraper for libFLuidSynth
 
-The content in "code" folder  corresponds to FluidSynth precompiled binaries an its source code can be found at https://github.com/FluidSynth/fluidsynth
+The content in "code" folder  corresponds to FluidSynth precompiled binaries and its source code can be found at https://github.com/FluidSynth/fluidsynth
 
 Here's a video of the progress I've made:
 
