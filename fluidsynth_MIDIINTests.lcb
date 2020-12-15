@@ -1,4 +1,4 @@
- library com.ferruslogic.library.fluidsynth
+library com.ferruslogic.library.fluidsynth
 
 metadata version is "0.5"
 metadata author is "FerrusLogic, Paul McClernan"
@@ -97,7 +97,7 @@ __safe foreign handler new_fluid_midi_router_rule() returns fs_MIDIROUTER_rule b
 __safe foreign handler delete_fluid_midi_router_rule(in pRouterRule as fs_MIDIROUTER_rule) returns CBool binds to "c:libfluidsynth>new_fluid_midi_router_rule"
 
 
-public foreign handler type handle_midi_event_func_t( in pOptionalDataPtr as optional Pointer, in mMIDIBufferPtr as Pointer) returns CInt
+public foreign handler type handle_midi_event_func_t( in pOptionalDataPtr as optional Pointer, in mMIDIEvtPtr as Pointer) returns CInt
 
 __safe foreign handler new_fluid_midi_driver(in pSettings as fs_SETTINGS, in pHandler as handle_midi_event_func_t, in pOptionalDataPtr as optional Pointer) \
 																	returns optional fs_MIDIdrvr binds to "c:libfluidsynth>new_fluid_midi_driver"
@@ -106,7 +106,8 @@ __safe foreign handler fluid_midi_event_get_type(in pMIDIEvent as fs_MIDIEvent) 
 __safe foreign handler fluid_midi_event_get_channel(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_channel"
 __safe foreign handler fluid_midi_event_get_key(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_key"
 __safe foreign handler fluid_midi_event_get_velocity(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_velocity"
-__safe foreign handler delete_fluid_midi_event(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>delete_fluid_midi_event"
+__safe foreign handler fluid_midi_event_get_pitch(in pMIDIEvent as fs_MIDIEvent) returns Cint binds to "c:libfluidsynth>fluid_midi_event_get_velocity"
+__safe foreign handler delete_fluid_midi_event(in pMIDIEvent as fs_MIDIEvent) returns nothing binds to "c:libfluidsynth>delete_fluid_midi_event"
 
 -- FLUIDSYNTH_API int 	fluid_player_set_playback_callback (fluid_player_t *player, handle_midi_event_func_t handler, void *handler_data) Change the MIDI callback function. More...
 -- FLUIDSYNTH_API int 	fluid_player_seek (fluid_player_t *player, int ticks) Seek in the currently playing file. More...
@@ -130,6 +131,8 @@ private handler fsPostMIDIinput(in tMsgType as Integer, in pChan as Integer, pNo
 	-- log tScriptObj
 	-- get the target -- not allowed in Library modules
 	-- log the result
+   resolve script object pTargetScriptObj
+
 	if tMsgType = 144 then
 		if mScriptObject exists then
 			post "MIDINoteOn" to mScriptObject with [ pChan , pNoteNum , pVelocity ]
@@ -151,7 +154,7 @@ private handler fsPostMIDIinput(in tMsgType as Integer, in pChan as Integer, pNo
 		end if
 	else if tMsgType = 224 then
 		-- post "MIDIPitchBend" with [ tChan , tNoteNum , tVelocity ]
-		post "MIDIPitchBend" to mScriptObject with [ pChan , pNoteNum , pVelocity ]
+		post "MIDIPitchBend" to mScriptObject with [ pChan , pNoteNum ]
 		return
 	else if tMsgType = 176 then
 		-- post "MIDIController" with [ tChan , tNoteNum , tVelocity ]
@@ -176,47 +179,42 @@ public handler fsSetMIDIInTargetScriptObj(in pTargetScriptObj as optional String
 	end if
 end handler
 
-private handler fsHandleMIDIinput(in pMyDataPtr as optional Pointer, in mMIDIBufferPtr as Pointer ) returns CInt
+private handler fsHandleMIDIinput(in pMyDataPtr as optional Pointer, in mMIDIEvtPtr as Pointer ) returns CInt
 	-- log [pMIDIEvent]
 	variable tChan as Integer
 	variable tMsgType as Integer
 	variable tNoteNum as Integer
 	variable tVelocity as Integer
-	-- resolve script object "this stack"
-	-- put the result into mScriptObject
-	-- variable tMIDIBufferPtr as Pointer
-	put fluid_midi_event_get_type(mMIDIBufferPtr) into tMsgType
-	put fluid_midi_event_get_channel(mMIDIBufferPtr) into tChan
-   put fluid_midi_event_get_key(mMIDIBufferPtr) into tNoteNum
-	put fluid_midi_event_get_velocity(mMIDIBufferPtr) into tVelocity
-
+	put fluid_midi_event_get_type(mMIDIEvtPtr) into tMsgType
+	put fluid_midi_event_get_channel(mMIDIEvtPtr) into tChan
 	-- log [tMsgType] -- ,tChan,tNoteNum,tVelocity]
 	if tMsgType = 144 then
+      put fluid_midi_event_get_key(mMIDIEvtPtr) into tNoteNum
+      put fluid_midi_event_get_velocity(mMIDIEvtPtr) into tVelocity
 		fsPostMIDIinput(tMsgType,tChan,tNoteNum,tVelocity)
 		-- fluid_synth_noteon(mSynth,tChan,tNoteNum,tVelocity)
-		-- post "MIDINoteOn" with [ tChan , tNoteNum , tVelocity ]
-		--post "MIDINoteOn" to mScriptObject with [ tChan , tNoteNum , tVelocity ]
 	else if tMsgType = 128 then
+      put fluid_midi_event_get_key(mMIDIEvtPtr) into tNoteNum
+      -- put fluid_midi_event_get_velocity(mMIDIEvtPtr) into tVelocity
 		fsPostMIDIinput(tMsgType,tChan,tNoteNum,0)
 		-- fluid_synth_noteoff(mSynth,tChan,tNoteNum)
-		-- post "MIDINoteOff" with [ tChan , tNoteNum , tVelocity ]
-		--post "MIDINoteOff" to mScriptObject with [ tChan , tNoteNum , tVelocity ]
 	else if tMsgType = 224 then
-		fsPostMIDIinput(tMsgType,tChan,tNoteNum,tVelocity)
+      fluid_midi_event_get_pitch(mMIDIEvtPtr) into tNoteNum
+		fsPostMIDIinput(tMsgType,tChan,tNoteNum,0)
 		-- fluid_synth_pitch_bend(mSynth,tChan,tNoteNum)
-		-- fsPostMIDIinput(tMsgType,tChan,tNoteNum,tVelocity)
-		-- post "MIDIPitchBend" with [ tChan , tNoteNum , tVelocity ]
 	else if tMsgType = 176 then
+      put fluid_midi_event_get_key(mMIDIEvtPtr) into tNoteNum
+      put fluid_midi_event_get_velocity(mMIDIEvtPtr) into tVelocity
 		fsPostMIDIinput(tMsgType,tChan,tNoteNum,tVelocity)
 		-- fluid_synth_cc(mSynth,tChan,tNoteNum,tVelocity)
-		-- fsPostMIDIinput(tMsgType,tChan,tNoteNum,tVelocity)
-	   -- post "MIDIController" with [ tChan , tNoteNum , tVelocity ]
 	end if
+   -- delete_fluid_midi_event(mMIDIEvtPtr)
+   -- put nothing into mMIDIEvtPtr
 	return 0
 end handler
 
 private variable mMIDIBuffer as Data
-private variable mMIDIBufferPtr as Pointer
+private variable mMIDIEvtPtr as optional Pointer
 variable mScriptObject as ScriptObject
 
 public handler fsInitMIDIinput(in pInputPortName as optional String, in pTargetScriptObj as optional String) returns optional any
@@ -251,8 +249,8 @@ public handler fsInitMIDIinput(in pInputPortName as optional String, in pTargetS
 	--		  put "Unable to set run loop" into tError
 	--		end if
 
-     -- put MCMemoryAllocate(65536,mMIDIBufferPtr) into tDidAllocateBlock --- crashing has nothing to do with buffer size
-		-- put MCMemoryAllocate(256,mMIDIBufferPtr) into tDidAllocateBlock
+     -- put MCMemoryAllocate(65536,mMIDIEvtPtr) into tDidAllocateBlock --- crashing has nothing to do with buffer size
+		-- put MCMemoryAllocate(256,mMIDIEvtPtr) into tDidAllocateBlock
 		put new_fluid_midi_driver(mSettings, fsHandleMIDIinput, nothing) into mMIDIDriver
  		--put new_fluid_midi_driver(mSettings, fsHandleMIDIinput , nothing) into mMIDIDriver
 	end if
