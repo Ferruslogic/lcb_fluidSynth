@@ -64,13 +64,25 @@ __safe foreign handler fluid_synth_get_sfont_by_id(in pSynth as fs_SYNTH, in pSF
 __safe foreign handler fluid_sfont_get_name(in pSoundFont as optional fs_SOUNDFONT) returns optional Pointer binds to "c:libfluidsynth>fluid_sfont_get_name" -- pointer to *char string
 __safe foreign handler fluid_synth_sfcount(in pSynth as fs_SYNTH ) returns CInt binds to "c:libfluidsynth>fluid_synth_sfcount"
 __safe foreign handler fluid_synth_system_reset(in pSynth as fs_SYNTH) returns CBool binds to "c:libfluidsynth>fluid_synth_system_reset"
-__safe foreign handler fluid_synth_noteon(in pSynth as fs_SYNTH,in pChan as CInt,in pKey as CInt, in pVel as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_noteon"
+__safe foreign handler fluid_synth_noteon(in pSynth as fs_SYNTH,in pChan as CInt,in pKey as CInt, in pVel as CInt ) returns CSInt binds to "c:libfluidsynth>fluid_synth_noteon"
 __safe foreign handler fluid_synth_noteoff(in pSynth as fs_SYNTH,in pChan as CInt,in pKey as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_noteoff"
-__safe foreign handler fluid_synth_pitch_bend(in pSynth as fs_SYNTH,in pChan as CInt,in pBend as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_pitch_bend" -- bend 0-16383, 8192 as center
-__safe foreign handler fluid_synth_cc(in pSynth as fs_SYNTH,in pChan as CInt,in pControllerNum as CInt, in pCCValue as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_cc"
-__safe foreign handler fluid_synth_get_cc(in pSynth as fs_SYNTH,in pChan as CInt,in pControllerNum as CInt, out rCCValue as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_get_cc"
+__safe foreign handler fluid_synth_pitch_bend(in pSynth as fs_SYNTH,in pChan as CInt,in pBend as CInt ) returns CSInt binds to "c:libfluidsynth>fluid_synth_pitch_bend" -- bend 0-16383, 8192 as center
+__safe foreign handler fluid_synth_cc(in pSynth as fs_SYNTH,in pChan as CInt,in pControllerNum as CInt, in pCCValue as CInt ) returns CSInt binds to "c:libfluidsynth>fluid_synth_cc"
+__safe foreign handler fluid_synth_get_cc(in pSynth as fs_SYNTH,in pChan as CInt,in pControllerNum as CInt, out rCCValue as CInt ) returns CSInt binds to "c:libfluidsynth>fluid_synth_get_cc"
 __safe foreign handler fluid_synth_program_change(in pSynth as fs_SYNTH,in pChan as CInt,in pProgram as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_program_change"
-__safe foreign handler fluid_synth_bank_select(in pSynth as fs_SYNTH,in pChan as CInt,in pBankNum as CInt ) returns CInt binds to "c:libfluidsynth>fluid_synth_bank_select"
+__safe foreign handler fluid_synth_bank_select(in pSynth as fs_SYNTH,in pChan as CInt,in pBankNum as CInt ) returns CSInt binds to "c:libfluidsynth>fluid_synth_bank_select"
+__safe foreign handler fluid_synth_all_notes_off(in pSynth as fs_SYNTH,in pChan as CInt) returns CSInt binds to "c:libfluidsynth>fluid_synth_all_notes_off"
+__safe foreign handler fluid_synth_all_sounds_off(in pSynth as fs_SYNTH,in pChan as CInt) returns CSInt binds to "c:libfluidsynth>fluid_synth_all_sounds_off"
+
+-- fluid_synth_set_reverb is Deprecated in FluidSynth 2.x use the new reverb 'group' / individual settings versions
+__safe foreign fluid_synth_set_reverb( in pSynth as fs_SYNTH, pRoomsize as CDouble, pDamping as CDouble, pWidth as CDouble, pLevel as CDouble) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_reverb"
+
+__safe foreign handler fluid_synth_reverb_on(in pSynth as fs_SYNTH,in pFXGroup as CInt,in pOnOff as Boolean) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_reverb_on"
+--pFXGroup must be in the range -1 to (fluid_synth_count_effects_groups()-1). If -1 the parameter common to all fx groups is fetched.
+__safe foreign handler fluid_synth_set_reverb_group_level(in pSynth as fs_SYNTH,in pFXGroup as CInt,in pLevel as CDouble ) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_reverb_group_level"
+__safe foreign handler fluid_synth_set_reverb_group_roomsize(in pSynth as fs_SYNTH,in pFXGroup as CInt,in pSize as CDouble) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_reverb_group_roomsize"
+__safe foreign handler fluid_synth_set_reverb_group_width(in pSynth as fs_SYNTH,in pFXGroup as CInt,in pWidth as CDouble) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_reverb_group_width"
+__safe foreign handler fluid_synth_set_reverb_group_damp(in pSynth as fs_SYNTH,in pFXGroup as CInt,in pDamp as CDouble) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_reverb_group_damp"
 
 __safe foreign handler new_fluid_player(in pSynth as fs_SYNTH ) returns optional fs_PLAYER binds to "c:libfluidsynth>new_fluid_player"
 __safe foreign handler delete_fluid_player(in pPlayer as fs_PLAYER) returns CBool binds to "c:libfluidsynth>delete_fluid_player"
@@ -132,36 +144,29 @@ private handler fsPostMIDIinput(in tMsgType as Integer, in pChan as Integer, pNo
 	-- get the target -- not allowed in Library modules
 	-- log the result
    -- resolve script object mScriptObject
+   if mScriptObject exists then
+   	if tMsgType = 144 then
+   		post "MIDINoteOn" to mScriptObject with [ pChan , pNoteNum , pVelocity ]
+   		-- send "MIDINoteOn" to mScriptObject with [ pChan , pNoteNum , pVelocity ]
+   		-- execute script "get MIDINoteOn(param(1),param(2),param(3)) " of mScriptObject with [ pChan, pNoteNum, pVelocity]
+   		-- execute script ("MIDINoteOn("& pChan &","& pNoteNum  &","& pVelocity &")") in mScriptObject
+   		-- log the message was handled
+   		-- log the result
+   	else if tMsgType = 128 then
+   		post "MIDINoteOff" to mScriptObject with [ pChan , pNoteNum ]
+   		-- send "MIDINoteOff" to mScriptObject with [ pChan , pNoteNum ]
+   		-- execute script ("MIDINoteOff("& pChan &","& pNoteNum & ")") in mScriptObject
+   		-- log the message was handled
+   		-- log the result
+   	else if tMsgType = 224 then
+   		-- post "MIDIPitchBend" with [ tChan , tNoteNum , tVelocity ]
+   		post "MIDIPitchBend" to mScriptObject with [ pChan , pNoteNum ]
+   	else if tMsgType = 176 then
+   		-- post "MIDIController" with [ tChan , tNoteNum , tVelocity ]
+   		post "MIDIController" to mScriptObject with [ pChan , pNoteNum , pVelocity ]
 
-	if tMsgType = 144 then
-		if mScriptObject exists then
-			post "MIDINoteOn" to mScriptObject with [ pChan , pNoteNum , pVelocity ]
-			-- send "MIDINoteOn" to mScriptObject with [ pChan , pNoteNum , pVelocity ]
-			-- execute script "get MIDINoteOn(param(1),param(2),param(3)) " of mScriptObject with [ pChan, pNoteNum, pVelocity]
-			-- execute script ("MIDINoteOn("& pChan &","& pNoteNum  &","& pVelocity &")") in mScriptObject
-			-- log the message was handled
-			-- log the result
-			return
-		end if
-	else if tMsgType = 128 then
-		if mScriptObject exists then
-			post "MIDINoteOff" to mScriptObject with [ pChan , pNoteNum ]
-			-- send "MIDINoteOff" to mScriptObject with [ pChan , pNoteNum ]
-			-- execute script ("MIDINoteOff("& pChan &","& pNoteNum & ")") in mScriptObject
-			-- log the message was handled
-			-- log the result
-			return
-		end if
-	else if tMsgType = 224 then
-      log pNoteNum
-		-- post "MIDIPitchBend" with [ tChan , tNoteNum , tVelocity ]
-		post "MIDIPitchBend" to mScriptObject with [ pChan , pNoteNum ]
-		return
-	else if tMsgType = 176 then
-		-- post "MIDIController" with [ tChan , tNoteNum , tVelocity ]
-		post "MIDIController" to mScriptObject with [ pChan , pNoteNum , pVelocity ]
-		return
-	end if
+   	end if
+   end if
 	-- log the system error message
 	-- com.livecode.system
 	-- log the result
@@ -599,6 +604,25 @@ end handler
 
 public handler fsBankSelect(in pChannel as Integer, in pProgramNum as Integer)
 	fluid_synth_bank_select(mSynth,pChannel,pProgramNum)
+end handler
+
+public handler fsAllNotesOff(in pChannel as Integer)
+	fluid_synth_all_notes_off(mSynth,pChannel)
+end handler
+
+public handler fsAllSoundsOff(in pChannel as Integer)
+	fluid_synth_all_sounds_off(mSynth,pChannel)
+end handler
+
+public handler fsSetReverb(in pFXGroup as Integer, in pLevel as Number, in pRoomSize as Number, in pWidth as Number, in pDamp as Number)
+   variable tResultStatus as CSint
+   fluid_synth_reverb_on(mSynth,-1,true)
+   put fluid_synth_set_reverb( mSynth, pRoomsize, pDamping, pWidth, pLevel ) into tResultStatus
+   --pFXGroup must be in the range -1 to (fluid_synth_count_effects_groups()-1). If -1 the parameter common to all fx groups is fetched.
+   fluid_synth_set_reverb_group_level(mSynth,-1,pLevel)
+   fluid_synth_set_reverb_group_roomsize(mSynth,-1,pRoomSize)
+   fluid_synth_set_reverb_group_width(mSynth,-1,pWidth)
+   fluid_synth_set_reverb_group_damp(mSynth,-1,pDamp)
 end handler
 
 public handler fsStopDriver()
