@@ -74,15 +74,27 @@ __safe foreign handler fluid_synth_bank_select(in pSynth as fs_SYNTH,in pChan as
 __safe foreign handler fluid_synth_all_notes_off(in pSynth as fs_SYNTH,in pChan as CInt) returns CSInt binds to "c:libfluidsynth>fluid_synth_all_notes_off"
 __safe foreign handler fluid_synth_all_sounds_off(in pSynth as fs_SYNTH,in pChan as CInt) returns CSInt binds to "c:libfluidsynth>fluid_synth_all_sounds_off"
 
+--pFXGroup must be in the range -1 to (fluid_synth_count_effects_groups()-1). If -1 the parameter common to all fx groups is fetched.
+__safe foreign handler fluid_synth_count_effects_groups(in pSynth as fs_SYNTH) returns CInt binds to "c:libfluidsynth>fluid_synth_count_effects_groups"
+
+__safe foreign handler fluid_synth_reverb_on(in pSynth as fs_SYNTH,in pFXGroup as CSInt,in pOnOff as Boolean) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_reverb_on"
 -- fluid_synth_set_reverb is Deprecated in FluidSynth 2.x use the new reverb 'group' / individual settings versions
 __safe foreign handler fluid_synth_set_reverb( in pSynth as fs_SYNTH, pRoomsize as CDouble, pDamp as CDouble, pWidth as CDouble, pLevel as CDouble) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_reverb"
+__safe foreign handler fluid_synth_set_reverb_group_level(in pSynth as fs_SYNTH,in pFXGroup as CSInt,in pLevel as CDouble ) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_reverb_group_level"
+__safe foreign handler fluid_synth_set_reverb_group_roomsize(in pSynth as fs_SYNTH,in pFXGroup as CSInt,in pSize as CDouble) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_reverb_group_roomsize"
+__safe foreign handler fluid_synth_set_reverb_group_width(in pSynth as fs_SYNTH,in pFXGroup as CSInt,in pWidth as CDouble) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_reverb_group_width"
+__safe foreign handler fluid_synth_set_reverb_group_damp(in pSynth as fs_SYNTH,in pFXGroup as CSInt,in pDamp as CDouble) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_reverb_group_damp"
 
-__safe foreign handler fluid_synth_reverb_on(in pSynth as fs_SYNTH,in pFXGroup as CInt,in pOnOff as Boolean) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_reverb_on"
---pFXGroup must be in the range -1 to (fluid_synth_count_effects_groups()-1). If -1 the parameter common to all fx groups is fetched.
-__safe foreign handler fluid_synth_set_reverb_group_level(in pSynth as fs_SYNTH,in pFXGroup as CInt,in pLevel as CDouble ) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_reverb_group_level"
-__safe foreign handler fluid_synth_set_reverb_group_roomsize(in pSynth as fs_SYNTH,in pFXGroup as CInt,in pSize as CDouble) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_reverb_group_roomsize"
-__safe foreign handler fluid_synth_set_reverb_group_width(in pSynth as fs_SYNTH,in pFXGroup as CInt,in pWidth as CDouble) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_reverb_group_width"
-__safe foreign handler fluid_synth_set_reverb_group_damp(in pSynth as fs_SYNTH,in pFXGroup as CInt,in pDamp as CDouble) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_reverb_group_damp"
+__safe foreign handler fluid_synth_chorus_on(in pSynth as fs_SYNTH,in pFXGroup as CSInt,in pOnOff as Boolean) returns CSInt binds to "c:libfluidsynth>fluid_synth_chorus_on"
+-- fluid_synth_set_reverb is Deprecated in FluidSynth 2.x use the new chorus 'group' / individual settings versions
+__safe foreign handler fluid_synth_set_chorus( in pSynth as fs_SYNTH, in pChorusVoices as CInt, in pLevel as CDouble, in pSpeed as CDouble, in pDepth as CDouble, in pChorusType as CInt) \
+                                                returns CSInt binds to "c:libfluidsynth>fluid_synth_set_chorus"
+__safe foreign handler fluid_synth_set_chorus_group_nr(in pSynth as fs_SYNTH,in pFXGroup as CSInt,in pChorusVoices as CInt ) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_chorus_group_nr"
+__safe foreign handler fluid_synth_set_chorus_group_level(in pSynth as fs_SYNTH,in pFXGroup as CSInt,in pLevel as CDouble ) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_chorus_group_level"
+__safe foreign handler fluid_synth_set_chorus_group_speed(in pSynth as fs_SYNTH,in pFXGroup as CSInt,in pSize as CDouble) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_chorus_group_speed"
+__safe foreign handler fluid_synth_set_chorus_group_depth(in pSynth as fs_SYNTH,in pFXGroup as CSInt,in pDamp as CDouble) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_chorus_group_depth"
+__safe foreign handler fluid_synth_set_chorus_group_type(in pSynth as fs_SYNTH,in pFXGroup as CSInt,in pChorusVoices as CInt ) returns CSInt binds to "c:libfluidsynth>fluid_synth_set_chorus_group_type"
+-- FLUID_CHORUS_MOD_SINE = 0, FLUID_CHORUS_MOD_TRIANGLE = 1
 
 __safe foreign handler new_fluid_player(in pSynth as fs_SYNTH ) returns optional fs_PLAYER binds to "c:libfluidsynth>new_fluid_player"
 __safe foreign handler delete_fluid_player(in pPlayer as fs_PLAYER) returns CBool binds to "c:libfluidsynth>delete_fluid_player"
@@ -616,13 +628,32 @@ end handler
 
 public handler fsSetReverb(in pFXGroup as Integer, in pLevel as Number, in pRoomSize as Number, in pWidth as Number, in pDamp as Number)
    variable tResultStatus as CSint
-   fluid_synth_reverb_on(mSynth,-1,true)
+   put fluid_synth_reverb_on(mSynth,-1,true) into tResultStatus
+   -- pFXGroup must be in the range -1 to (fluid_synth_count_effects_groups()-1). If -1 the parameter common to all fx groups is fetched.
+   -- put fluid_synth_count_effects_groups(mSynth) into tResultStatus
+   --log tResultStatus
    put fluid_synth_set_reverb( mSynth, pRoomsize, pDamp, pWidth, pLevel) into tResultStatus
-   --pFXGroup must be in the range -1 to (fluid_synth_count_effects_groups()-1). If -1 the parameter common to all fx groups is fetched.
-   --fluid_synth_set_reverb_group_level(mSynth,-1,pLevel)
-   --fluid_synth_set_reverb_group_roomsize(mSynth,-1,pRoomSize)
-   --fluid_synth_set_reverb_group_width(mSynth,-1,pWidth)
-   --fluid_synth_set_reverb_group_damp(mSynth,-1,pDamp)
+   -- fluid_synth_set_reverb above is deprecated in libFluidSynth 2.x but could not bind to the individual replacement functions below on macOS FS v.2.1.5
+
+   -- put fluid_synth_set_reverb_group_level(mSynth,-1,pLevel) into tResultStatus
+   -- put fluid_synth_set_reverb_group_roomsize(mSynth,-1,pRoomSize) into tResultStatus
+   -- put fluid_synth_set_reverb_group_width(mSynth,-1,pWidth) into tResultStatus
+   -- put fluid_synth_set_reverb_group_damp(mSynth,-1,pDamp) into tResultStatus
+end handler
+
+public handler fsSetChorus(in pFXGroup as Integer, in pChorusVoices as Integer, in pLevel as Number, in pSpeed as Number, in pDepth as Number, in pChorusType as Integer)
+   variable tResultStatus as CSint
+   put fluid_synth_chorus_on(mSynth,-1,true) into tResultStatus
+   -- pFXGroup must be in the range -1 to (fluid_synth_count_effects_groups()-1). If -1 the parameter common to all fx groups is fetched.
+   -- put fluid_synth_count_effects_groups(mSynth) into tResultStatus
+   --log tResultStatus
+   put fluid_synth_set_chorus( mSynth, pChorusVoices, pLevel, pSpeed, pDepth, pChorusType) into tResultStatus
+   -- fluid_synth_set_reverb above is deprecated in libFluidSynth 2.x but could not bind to the individual replacement functions below on macOS FS v.2.1.5
+
+   -- put fluid_synth_set_reverb_group_level(mSynth,-1,pLevel) into tResultStatus
+   -- put fluid_synth_set_reverb_group_roomsize(mSynth,-1,pRoomSize) into tResultStatus
+   -- put fluid_synth_set_reverb_group_width(mSynth,-1,pWidth) into tResultStatus
+   -- put fluid_synth_set_reverb_group_damp(mSynth,-1,pDamp) into tResultStatus
 end handler
 
 public handler fsStopDriver()
