@@ -20,7 +20,7 @@ private type fs_SYNTH is Pointer
 private type fs_AUIDIOdrvr is Pointer
 private type fs_PLAYER is Pointer
 private type fs_SOUNDFONT is Pointer
-
+private type fs_FILE_RENDERER is Pointer
 private type fs_MIDIROUTER is Pointer
 private type fs_MIDIROUTER_rule is Pointer
 private type fs_MIDIdrvr is Pointer
@@ -41,8 +41,11 @@ private variable mMIDIDriver as optional fs_MIDIdrvr
 __safe foreign handler new_fluid_settings() returns fs_SETTINGS binds to "c:libfluidsynth>new_fluid_settings"
 __safe foreign handler fluid_settings_setnum(in pSettings as fs_SETTINGS, in pSettingName as ZStringNative, in pNumber as CDouble) returns CInt binds to "c:libfluidsynth>fluid_settings_setnum"
 __safe foreign handler fluid_settings_getnum(in pSettings as fs_SETTINGS, in pSettingName as ZStringNative, out rNumber as CDouble) returns CInt binds to "c:libfluidsynth>fluid_settings_getnum"
+__safe foreign handler fluid_settings_setint(in pSettings as fs_SETTINGS, in pSettingName as ZStringNative, in pNumber as CInt) returns CInt binds to "c:libfluidsynth>fluid_settings_setint"
+__safe foreign handler fluid_settings_getint(in pSettings as fs_SETTINGS, in pSettingName as ZStringNative, out rNumber as CInt) returns CInt binds to "c:libfluidsynth>fluid_settings_getint"
 __safe foreign handler fluid_settings_setstr(in pSettings as fs_SETTINGS, in pSettingName as ZStringNative, in pSettingString as ZStringNative) returns Cbool binds to "c:libfluidsynth>fluid_settings_setstr"
 __safe foreign handler fluid_settings_getstr(in pSettings as fs_SETTINGS, in pSettingName as ZStringNative, out rSettingString as ZStringNative) returns CBool binds to "c:libfluidsynth>fluid_settings_getstr"
+
 __safe foreign handler fluid_is_midifile(in pFilename as ZStringNative ) returns CBool binds to "c:libfluidsynth>fluid_is_midifile"
 __safe foreign handler fluid_is_soundfont(in pFilename as ZStringNative ) returns CBool binds to "c:libfluidsynth>fluid_is_soundfont"
 __safe foreign handler fluid_version(out rMaj as CInt, out rMin as CInt, out rMicr as CInt) returns nothing binds to "c:libfluidsynth>fluid_version"
@@ -101,6 +104,8 @@ __safe foreign handler delete_fluid_player(in pPlayer as fs_PLAYER) returns CBoo
 __safe foreign handler fluid_player_add(in pPlayer as fs_PLAYER,in pFilename as ZStringNative) returns CInt binds to "c:libfluidsynth>fluid_player_add"
 __safe foreign handler fluid_player_play(in pPlayer as fs_PLAYER) returns CInt binds to "c:libfluidsynth>fluid_player_play"
 __safe foreign handler fluid_player_stop(in pPlayer as fs_PLAYER) returns CInt binds to "c:libfluidsynth>fluid_player_stop"
+__safe foreign handler fluid_player_join(in pPlayer as fs_PLAYER) returns CInt binds to "c:libfluidsynth>fluid_player_join"
+
 -- pLoop = 	Times left to loop the playlist. -1 means loop infinitely.
 __safe foreign handler fluid_player_set_loop(in pPlayer as fs_PLAYER,in pLoop as CInt) returns CInt binds to "c:libfluidsynth>fluid_player_set_loop"
 __safe foreign handler fluid_player_set_bpm(in pPlayer as fs_PLAYER,in pBPM as CInt) returns CInt binds to "c:libfluidsynth>fluid_player_set_bpm"
@@ -112,8 +117,11 @@ __safe foreign handler fluid_player_get_status(in pPlayer as fs_PLAYER) returns 
 __safe foreign handler fluid_player_get_current_tick(in pPlayer as fs_PLAYER) returns CInt binds to "c:libfluidsynth>fluid_player_get_current_tick"
 __safe foreign handler fluid_player_get_total_ticks(in pPlayer as fs_PLAYER) returns CInt binds to "c:libfluidsynth>fluid_player_get_total_ticks"
 
--- http://www.fluidsynth.org/api-1.x/index.html#RealtimeMIDI
+__safe foreign handler new_fluid_file_renderer(in mSynth as fs_SYNTH) returns fs_FILE_RENDERER binds to "c:libfluidsynth>new_fluid_file_renderer"
+__safe foreign handler fluid_file_renderer_process_block(in pFileRenderer as fs_FILE_RENDERER) returns CSInt binds to "c:libfluidsynth>fluid_file_renderer_process_block"
+__safe foreign handler delete_fluid_file_renderer(in pFileRenderer as fs_FILE_RENDERER) returns CSInt binds to "c:libfluidsynth>delete_fluid_file_renderer"
 
+-- http://www.fluidsynth.org/api-1.x/index.html#RealtimeMIDI
 __safe foreign handler new_fluid_midi_router(in pSettings as fs_SETTINGS, in pHandler as any, in pHandlerData as optional any)\
  																			returns optional fs_MIDIROUTER binds to "c:libfluidsynth>new_fluid_midi_router"
 __safe foreign handler delete_fluid_midi_router(in pPlayer as fs_MIDIROUTER) returns CBool binds to "c:libfluidsynth>delete_fluid_midi_router"
@@ -318,6 +326,55 @@ public handler fsGetSoundFontCount() returns optional Integer
 			    return tCount
           end if
 		end if
+	end if
+end handler
+
+public handler fsMIDIFileToSoundFile(in pMIDIFilePath as String,in pSoundFilePath as String) -- returns optional any
+	variable tStatus as Integer
+   variable tPlayer as fs_PLAYER
+   variable tRenderer as fs_FILE_RENDERER
+	if fsEnsureInitialize() then
+      -- specify the file to store the audio to
+      -- make sure you compiled fluidsynth with libsndfile to get a real wave file
+      -- otherwise this file will only contain raw s16 stereo PCM
+      fluid_settings_setstr(mSettings, "audio.file.name", pSoundFilePath)
+      fluid_settings_setstr(mSettings, "audio.file.type", "wav")
+      -- aiff, au, auto, avr, caf, flac, htk, iff, mat, oga, paf, pvf, raw, sd2, sds, sf, voc, w64, wav, xi
+      -- Default = 'auto' if libsndfile support is built in, Limited to 'raw' if compiled without libsndfile support.
+      -- Actual options will vary depending on libsndfile library.
+      fluid_settings_setstr(mSettings, "audio.file.format", "s16") -- options are double, float, s16, s24, s32, s8, u8
+      fluid_settings_setstr(mSettings, "audio.file.endian", "auto") -- auto, big, cpu, little ('cpu' only if libsndfile support is not built in)
+
+      -- use number of samples processed as timing source, rather than the system timer
+      fluid_settings_setstr(mSettings, "player.timing-source", "sample")
+
+      -- since this is a non-realtime scenario, there is no need to pin the sample data
+      fluid_settings_setint(mSettings, "synth.lock-memory", 0)
+
+      put new_fluid_player(mSynth) into tPlayer
+      put new_fluid_file_renderer(mSynth) into tRenderer
+      fluid_player_add(tPlayer, pMIDIFilePath)
+      fluid_player_play(tPlayer)
+      repeat while fluid_player_get_status(tPlayer) = 1  -- FLUID_PLAYER_PLAYING = 1
+         if (fluid_file_renderer_process_block(tRenderer) is not kFLUID_OK) then
+            exit repeat
+         end if
+      end repeat
+      -- just for sure: stop the playback explicitly and wait until finished
+      fluid_player_stop(tPLayer)
+      fluid_player_join(tPLayer)
+      delete_fluid_file_renderer(tRenderer)
+      delete_fluid_player(tPlayer)
+      -- delete_fluid_synth(mSynth)
+      -- delete_fluid_settings(mSettings)
+      -- re-pin the sample data
+      fluid_settings_setint(mSettings, "synth.lock-memory", 1)
+
+      -- Various output files types are supported, if compiled with libsndfile.
+      -- Those can be specified via the settings object as well. Refer to the Audio driver settings
+      -- documentation for more audio.file.* options.
+	else
+		return "Error: FluidSynth not initialized!"
 	end if
 end handler
 
