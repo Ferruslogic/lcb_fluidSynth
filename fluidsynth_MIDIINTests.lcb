@@ -366,7 +366,7 @@ public handler fsMIDIFileToSoundFile(in pSoundFontPath as String, in pMIDIFilePa
       -- aiff, au, auto, avr, caf, flac, htk, iff, mat, oga, paf, pvf, raw, sd2, sds, sf, voc, w64, wav, xi
       -- Default = 'auto' if libsndfile support is built in, Limited to 'raw' if compiled without libsndfile support.
       -- Actual options will vary depending on libsndfile library.
-   
+
       fluid_settings_setstr(tSettings, "audio.file.format", "s16") -- options are double, float, s16, s24, s32, s8, u8
       fluid_settings_setstr(tSettings, "audio.file.endian", "auto") -- auto, big, cpu, little ('cpu' only if libsndfile support is not built in)
 
@@ -709,6 +709,10 @@ end handler
 
 public handler fsAllSoundsOff(in pChannel as Integer)
 	fluid_synth_all_sounds_off(mSynth,pChannel)
+end handler
+
+public handler fsContinuousController(in pChannel as Integer, in pController as Integer, in pValue as Integer)
+   fluid_synth_cc(mSynth,pChannel,pController,pValue) -- returns CSInt
 end handler
 
 public handler fsSetReverb(in pFXGroup as Integer, in pLevel as Number, in pRoomSize as Number, in pWidth as Number, in pDamp as Number)
