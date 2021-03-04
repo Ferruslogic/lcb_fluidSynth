@@ -472,3 +472,7 @@ code/arm64-android/._libFLAC.so
 code/arm64-android/._libffi.so
 code/arm64-android/._libcharset.so
 code/arm64-android/._libc++_shared.so
+._fluidsynth_MIDIINTests.lcb
+._x86_64-mac
+x86_64-mac/._editpath.sh
+x86_64-mac/._libsndfile.1.dylib~
